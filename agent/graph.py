@@ -60,5 +60,4 @@ print(response3.techstack)
 print(response3.features)
 for file in response3.files:
     print(f"File Path: {file.path}, Purpose: {file.purpose}")
-print(len(response3.files))
 
