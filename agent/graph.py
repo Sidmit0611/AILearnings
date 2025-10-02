@@ -1,9 +1,12 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 from langchain_groq import ChatGroq
 from langchain.schema import HumanMessage, SystemMessage
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field 
+from langgraph.graph import StateGraph, END
+from prompts import *
+from states import *
+
+from dotenv import load_dotenv
+load_dotenv()
 
 llm = ChatGroq(model="openai/gpt-oss-120b")
 
@@ -23,28 +26,8 @@ by this way, reponse will be object of Schema class and we can access the values
 e.g. response.price, response.eps
 """
 
-user_prompt = "Create a simple calculator web application"
 
-prompt = f"""
-You are a Planner Agent. Convert the user prompt into a COMPLETE engineering project plan
-User Request: {user_prompt}
-"""
-
-class Schema(BaseModel):
-    price: float
-    eps: float
-
-class File(BaseModel):
-    path: str = Field(description="Path to the file that needs to be created")
-    purpose: str = Field(description="Purpose of the file, example: main application logic, data pocessing module, UI component etc.")
-    
-class Plan(BaseModel):
-    name: str = Field(description="Name of the app to be built")
-    description: str = Field(description="One line description of the app")
-    techstack: list[str] = Field(description="List of technologies to be used, e.g. React, Flask, Python, ReactJS, JavaScript etc.")
-    features: list[str] = Field(description="List of features a user should have, e.g. Login, Signup, User Profile, User Authentication, Dashboard etc.")
-    files: list[File] = Field(description="List of files to be created with a Path and Purpose of the file")
-
+# --------------------------- EXAMPLES ---------------------------
 response1 = llm.invoke("Who invented Kriya Yoga?. Answer in 1 sentence")
 print(response1)
 
@@ -52,12 +35,22 @@ response2 = llm.with_structured_output(Schema).invoke("Extract Price and EPS fro
                       "The price of the stock is $150 and the EPS is $5.25.")
 print(response2.price)
 print(response2.eps)
+# ----------------------------------------------------------------
 
-response3 = llm.with_structured_output(Plan).invoke(prompt)
+user_prompt = "Create a simple calculator web application"
+prompt = planner_prompt(user_prompt) # importing prompt from prompts.py file
+response3 = llm.with_structured_output(Plan).invoke(prompt) #main response for this code 
 print(response3.name)
 print(response3.description)
 print(response3.techstack)
 print(response3.features)
 for file in response3.files:
     print(f"File Path: {file.path}, Purpose: {file.purpose}")
+
+
+def planner_agent(input: str) -> dict:
+    user_pro
+
+graph = StateGraph(dict)
+graph.add_node("planner", planner_agent)
 
