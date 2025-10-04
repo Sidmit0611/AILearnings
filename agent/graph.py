@@ -55,29 +55,62 @@ def planner_agent(state: dict) -> dict:
     This agent will create a plan for the application to be built.
     It will take the user prompt as input and return the plan as output.
     """
-    user_prompt = state["user_prompt"]
-    prompt = planner_prompt(user_prompt) # importing prompt from prompts.py file
-    response3 = llm.with_structured_output(Plan).invoke(prompt) #main response for this code
-    return {"plan" : response3}
+    try:
+        user_prompt = state["user_prompt"]
+        prompt = planner_prompt(user_prompt) # importing prompt from prompts.py file
+        response3 = llm.with_structured_output(Plan).invoke(prompt) #main response for this code
+        return {"plan" : response3}
+    except Exception as e:
+        raise ValueError({"Planner did not return a valid response": str(e)})
 
-user_prompt = "Create a simple calculator web application"
+def architect_agent(state: dict) -> dict:
+    """
+    This agent will take the plan created by the planner agent and break it down into explicit engineering tasks.
+    It will also create a file structure for the project.
+    """
+    try:
+        plan = state["plan"]
+        prompt = architect_prompt(plan) # importing prompt from prompts.py file
+        response4 = llm.with_structured_output(TaskPlan).invoke(prompt) #main response for this code
+        response4.plan = plan  # Attach the original plan to the response for context
+        return {"task_plan" : response4}
+    except Exception as e:
+        raise ValueError({"Architect did not return a valid response": str(e)})
 
 graph = StateGraph(dict)
 graph.add_node("planner", planner_agent)
+graph.add_node("architect", architect_agent)
+graph.add_edge("planner", "architect")
 graph.set_entry_point("planner")
-agent = graph.compile()
 
-result = agent.invoke({"user_prompt": user_prompt})
-for key, value in result.items():
-    if key == "plan":
-        print(f"{key}:")
-        print(f"  Name: {value.name}")
-        print(f"  Description: {value.description}")
-        print(f"  Techstack: {', '.join(value.techstack)}")
-        print(f"  Features: {', '.join(value.features)}")
-        print(f"  Files:")
-        for file in value.files:
-            print(f"    - Path: {file.path}, Purpose: {file.purpose}")
-    else:
-        print(f"{key}: {value}")
-graph.visualize()  # This will open the graph visualization in your browser
+
+if __name__ == "__main__":
+    user_prompt = "Create a simple calculator web application"
+    agent = graph.compile()
+    result = agent.invoke({"user_prompt": user_prompt})
+
+    print(f"Type of Result is {type(result)}")
+    for key, value in result.items():
+        if key == "plan":
+            print(f"{key}:")
+            print(f"  Name: {value.name}")
+            print(f"  Description: {value.description}")
+            print(f"  Techstack: {', '.join(value.techstack)}")
+            print(f"  Features: {', '.join(value.features)}")
+            print(f"  Files:")
+            for file in value.files:
+                print(f"    - Path: {file.path}, Purpose: {file.purpose}")
+        if key == "task_plan":
+            print(f"{key}:")
+            for step in value.implementation_steps:
+                print(f"  - Filepath: {step.filepath}")
+                print(f"    Task Description: {step.task_description}")
+            print(f"  Original Plan Name: {value.plan.name}")
+            print(f"  Original Plan Description: {value.plan.description}")
+            print(f"  Original Plan Techstack: {', '.join(value.plan.techstack)}")
+            print(f"  Original Plan Features: {', '.join(value.plan.features)}")
+            print(f"  Original Plan Files:")
+            for file in value.plan.files:
+                print(f"    - Path: {file.path}, Purpose: {file.purpose}")
+        else:
+            print(f"{key}: {value}")
