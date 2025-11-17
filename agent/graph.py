@@ -39,13 +39,13 @@ response2 = llm.with_structured_output(Schema).invoke("Extract Price and EPS fro
 user_prompt = "Create a simple calculator web application"
 prompt = planner_prompt(user_prompt) # importing prompt from prompts.py file
 response3 = llm.with_structured_output(Plan).invoke(prompt) #main response for this code 
-# print(response3.name)
-# print(response3.description)
-# print(response3.techstack)
-# print(response3.features)
+print(response3.name)
+print(response3.description)
+print(response3.techstack)
+print(response3.features)
 for file in response3.files:
-    pass # remove when print statement is uncommented
-    # print(f"File Path: {file.path}, Purpose: {file.purpose}")
+    
+    print(f"File Path: {file.path}, Purpose: {file.purpose}")
 
 # ----------------------------------------------------------------
 
@@ -87,7 +87,15 @@ graph.set_entry_point("planner")
 if __name__ == "__main__":
     user_prompt = "Create a simple calculator web application"
     agent = graph.compile()
+
+    for step in agent.stream({"user_prompt": user_prompt}):
+        print("\n--- STREAM STATE UPDATE ---\n")
+        print(step)
+        print("********************************\n")
     result = agent.invoke({"user_prompt": user_prompt})
+    print("\n--- FINAL STATE ---")
+    print(result)
+    1/0
 
     print(f"Type of Result is {type(result)}")
     for key, value in result.items():
