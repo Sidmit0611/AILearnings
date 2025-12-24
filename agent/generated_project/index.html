@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="calculator" id="calculator">
+        <input type="text" id="display" class="calculator-display" readonly>
+        <div class="buttons-grid">
+            <!-- Row 1: Clear, 7, 8, 9, /
+            -->
+            <button type="button" class="btn btn-clear" data-value="C">C</button>
+            <button type="button" class="btn btn-number" data-value="7">7</button>
+            <button type="button" class="btn btn-number" data-value="8">8</button>
+            <button type="button" class="btn btn-number" data-value="9">9</button>
+            <button type="button" class="btn btn-operator" data-value="/">/</button>
+            <!-- Row 2: 4,5,6,* -->
+            <button type="button" class="btn btn-number" data-value="4">4</button>
+            <button type="button" class="btn btn-number" data-value="5">5</button>
+            <button type="button" class="btn btn-number" data-value="6">6</button>
+            <button type="button" class="btn btn-operator" data-value="*">*</button>
+            <!-- Row 3: 1,2,3,- -->
+            <button type="button" class="btn btn-number" data-value="1">1</button>
+            <button type="button" class="btn btn-number" data-value="2">2</button>
+            <button type="button" class="btn btn-number" data-value="3">3</button>
+            <button type="button" class="btn btn-operator" data-value="-">-</button>
+            <!-- Row 4: 0, ., = -->
+            <button type="button" class="btn btn-number" data-value="0">0</button>
+            <button type="button" class="btn btn-number" data-value=".">.</button>
+            <button type="button" class="btn btn-equals" data-value="=">=</button>
+        </div>
+    </div>
+</body>
+</html>

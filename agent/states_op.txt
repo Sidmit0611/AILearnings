@@ -1,0 +1,81 @@
+{plan: 
+    name='Simple Calculator' 
+    
+    description='A lightweight web application that performs basic arithmetic calculations (addition, subtraction, multiplication, division) with a clean, responsive user interface.' 
+    
+    techstack=['HTML5', 'CSS3', 'JavaScript (ES6)'] 
+    
+    features=['User-friendly calculator UI with buttons for digits 0-9 and operations (+, -, *, /)', 'Display screen for input and result', 'Clear (C) and backspace (←) functionality', 'Keyboard support for numbers and operators', 'Responsive design for desktop and mobile browsers'] 
+    
+    files=[ File(file_path='index.html', 
+            file_description='Main HTML page that structures the calculator layout and includes references to CSS and JavaScript.', 
+            file_purpose='UI markup and entry point for the application'), 
+            
+            File(file_path='styles.css', 
+            file_description='Styling for the calculator, ensuring a clean look and responsive behavior.', 
+            file_purpose='Presentation layer (layout, colors, responsive design)'), 
+            
+            File(file_path='app.js', 
+            file_description='JavaScript logic handling button clicks, keyboard input, calculation processing, and display updates.',
+            file_purpose='Application logic and event handling'), 
+            
+            File(file_path='README.md', 
+            file_description='Project README with setup instructions, usage guide, and technology overview.', 
+            file_purpose='Documentation for developers and users')
+            ]
+}
+
+
+-_-_-_-_-_-_-_-_--_-_-_-_-_-_-_-_--_-_-_-_-_-_-_-_--_-_-_-_-_-_-_-_--_-_-_-_-_-_-_-_--_-_-_-_-_-_-_-_--_-_-_-_-_-_-_-_-
+{task_plan : 
+    implementation_steps=[
+        ImplementationTask(
+            filepath='index.html', 
+            task_description='Create the main HTML markup for the calculator application.\n\n- Add the HTML5 doctype and `<html lang="en">` root element.\n- Inside `<head>` include:\n  - `<meta charset="UTF-8">`\n  - `<meta name="viewport" content="width=device-width, initial-scale=1.0">` for responsive behavior.\n  - `<title>Simple Calculator</title>`.\n  - `<link rel="stylesheet" href="styles.css">` to import the stylesheet.\n  - `<script defer src="app.js"></script>` to load the JavaScript after the DOM is parsed.\n- Inside `<body>` create a single `<div class="calculator">` container that will be styled by `styles.css`.\n  - Add a `<div id="display" class="display" aria-live="polite">0</div>` that serves as the screen for user input and results.\n  - Add a `<div class="buttons">` that holds all calculator buttons using `<button>` elements. Each button gets:\n    - A `data-value` attribute containing the character it represents (e.g., `data-value="7"`, `data-value="+"`).\n    - A semantic label via `aria-label` for accessibility.\n    - A distinct class for styling (`class="btn"`).\n  - Buttons to include (in logical order for a grid):\n    - `C` (clear) → `data-action="clear"`\n    - `←` (backspace) → `data-action="backspace"`\n    - `/` (divide) → `data-value="/"`\n    - `*` (multiply) → `data-value="*"`\n    - Digits `7 8 9`, `4 5 6`, `1 2 3`, `0`\n    - `.` (decimal point) → `data-value="."`\n    - `=` (equals) → `data-action="equals"`\n    - `+` (add) → `data-value="+"`\n    - `-` (subtract) → `data-value="-"`\n  - Ensure the button order matches the visual grid layout expected by `styles.css`.\n\nThis file provides the static UI skeleton that `styles.css` will style and `app.js` will interact with via DOM queries.\n'
+            ),
+        
+        ImplementationTask(
+            filepath='styles.css', 
+            task_description='Implement the visual styling and responsive layout for the calculator.\n\n1. **Root and Reset**\n   - Define CSS custom properties for primary colors, button size, font family, etc.\n   - Apply a simple CSS reset (`margin:0; padding:0; box-sizing:border-box;`).\n2. **Calculator Container**\n   - `.calculator` should be a flex container centered vertically and horizontally, with a max‑width (e.g., 400px) and a subtle box‑shadow.\n   - Add padding and a background color using the defined custom properties.\n3. **Display**\n   - Style `#display` with a large, right‑aligned font, a dark background, light text, and enough height to show long expressions.\n   - Use `overflow-x:auto` to allow horizontal scrolling for long inputs.\n4. **Buttons Grid**\n   - `.buttons` uses CSS Grid: `grid-template-columns: repeat(4, 1fr);` and `gap: 8px`.\n   - `.btn` gets a consistent size, border‑radius, background color, cursor pointer, and a hover/focus effect.\n   - Differentiate special buttons (`[data-action="clear"]`, `[data-action="backspace"]`, `[data-action="equals"]`) with distinct background colors.\n5. **Responsive Design**\n   - Add a media query for screens ≤ 480px to shrink button font‑size and reduce gaps, ensuring the calculator fits comfortably on mobile devices.\n   - Ensure the container width becomes `90vw` on small screens.\n\nThe CSS classes and IDs defined here (`.calculator`, `#display`, `.buttons`, `.btn`) are referenced in `index.html` and will be accessed by `app.js` for dynamic state changes (e.g., adding an `active` class on button press).\n'),
+        
+        ImplementationTask(
+            filepath='app.js', 
+            task_description='Implement the interactive JavaScript logic for the calculator.\n\n**Step 1 – DOM References & Event Wiring**\n- Define constants that query the required DOM elements:\n  ```js\n  const displayEl = document.getElementById(\'display\');\n  const buttons = document.querySelectorAll(\'.btn\');\n  ```\n- Attach a click event listener to each button using `button.addEventListener(\'click\', handleButtonClick);`.\n- Implement `handleButtonClick(event)` to read `event.target.dataset`:\n  - If `data-action="clear"` → call `clearDisplay()`.\n  - If `data-action="backspace"` → call `backspace()`.\n  - If `data-action="equals"` → call `evaluateExpression()`.\n  - Otherwise, treat it as a character (`data-value`) and call `appendToDisplay(value)`.\n- Add a global `keydown` listener on `document` to map keyboard keys to the same functions (e.g., digits, `+ - * /`, `Enter` for equals, `Backspace` for backspace, `Escape` for clear).\n\n**Step 2 – Core Functions**\n- `function appendToDisplay(char) { /* concatenate char to display text, handling leading zero */ }`\n- `function clearDisplay() { displayEl.textContent = \'0\'; }`\n- `function backspace() { /* remove last character, fallback to \'0\' */ }`\n- `function evaluateExpression() { /* safely evaluate the arithmetic string */ }`\n\n**Step 3 – Evaluation Logic**\n- Implement `evaluateExpression()` to:\n  1. Retrieve the current expression from `displayEl.textContent`.\n  2. Replace any accidental multiple operators (e.g., `++`) with the last operator.\n  3. Use the `Function` constructor for a quick safe eval:\n     ```js\n     const sanitized = expression.replace(/[^0-9+\\-*/.]/g, \'\');\n     const result = Function(`\'use strict\'; return (${sanitized})`)();\n     ```\n  4. Handle division by zero: if `result === Infinity` or `NaN`, set display to `\'Error\'`.\n  5. Update `displayEl.textContent` with the result, limiting decimal places to a reasonable amount (e.g., `toFixed(10)` then trim trailing zeros).\n\n**Step 4 – UI Feedback**\n- Within `handleButtonClick`, add a temporary visual feedback by toggling an `active` class on the clicked button (e.g., `button.classList.add(\'active\')` then `setTimeout` to remove it).\n- Ensure the same visual feedback occurs for keyboard input by programmatically adding the `active` class to the corresponding button element (found via `document.querySelector(`[data-value="${key}"]`)`).\n\n**Integration Details**\n- This script expects the HTML structure defined in `index.html` (ids and data attributes) and the CSS classes from `styles.css`.\n- All functions are pure JavaScript (ES6) and do not require external imports.\n- The order of implementation ensures that DOM queries occur after the HTML is parsed (script is loaded with `defer`).\n\nBy completing these steps, the calculator will respond to both mouse clicks and keyboard input, perform accurate arithmetic, and provide a responsive UI consistent with the markup and styling.\n'), 
+        
+        ImplementationTask(
+            filepath='README.md', 
+            task_description='Create the project README with sections for:\n- Project overview and purpose.\n- Tech stack (HTML5, CSS3, JavaScript ES6).\n- Features list matching the specification.\n- Quick start instructions (open `index.html` in a browser).\n- Usage guide describing button layout, keyboard shortcuts, and error handling.\n- Credits and license placeholder.\n\nThe README does not affect runtime but documents the implementation for developers and users.\n')
+        ] 
+
+
+plan=Plan(name='Simple Calculator', 
+
+          description='A lightweight web application that performs basic arithmetic calculations (addition, subtraction, multiplication, division) with a clean, responsive user interface.', 
+          
+          techstack=['HTML5', 'CSS3', 'JavaScript (ES6)'],
+          
+          features=['User-friendly calculator UI with buttons for digits 0-9 and operations (+, -, *, /)', 'Display screen for input and result', 'Clear (C) and backspace (←) functionality', 'Keyboard support for numbers and operators', 'Responsive design for desktop and mobile browsers'], 
+          
+          files=[
+              File(file_path='index.html',
+                      file_description='Main HTML page that structures the calculator layout and includes references to CSS and JavaScript.', 
+                      file_purpose='UI markup and entry point for the application'), 
+                      
+                File(file_path='styles.css', 
+                     file_description='Styling for the calculator, ensuring a clean look and responsive behavior.', 
+                     file_purpose='Presentation layer (layout, colors, responsive design)'),
+                      
+                File(file_path='app.js', 
+                     file_description='JavaScript logic handling button clicks, keyboard input, calculation processing, and display updates.',
+                     file_purpose='Application logic and event handling'),
+                      
+                File(file_path='README.md', 
+                     file_description='Project README with setup instructions, usage guide, and technology overview.', 
+                     file_purpose='Documentation for developers and users')
+                ]
+        )
+}
+
+
+
+

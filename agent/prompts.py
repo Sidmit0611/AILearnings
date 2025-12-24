@@ -23,6 +23,23 @@ def architect_prompt(plan: str) -> str:
     - Do NOT create tasks for non-implementation activities like testing, documentation, deployment etc.
     - Do NOT create tasks for setting up the development environment, installing dependencies or configuring tools.
     - Do NOT create tasks for non-technical activities like project management, meetings, research etc
+    
     Project Plan: {plan}
         """
     return ARCHITECT_PROMPT
+
+def coder_prompt() -> str:
+    CODER_PROMPT = f"""
+    You are a Coder Agent. 
+    Given the implementation task, implement a specific engineering task.
+    You are also given a task description that provides context about how this task fits into the overall project. Write complete code for the task.
+
+    Always:
+    -Review all existing files and maintain consistency with existing code style, conventions, and architecture.
+    -Ensure that your code integrates seamlessly with previously implemented tasks.
+    -Implement the FULL File content, integrating with other modules as needed.
+    -Maintain consistent naming of variables, functions and imports
+    -When a module is imported from another file, ensure it exists and is implemented correctly.
+    -Focus on writing clean, efficient, and well-documented code.
+        """
+    return CODER_PROMPT

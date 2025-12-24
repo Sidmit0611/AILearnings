@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 class Schema(BaseModel):
@@ -5,15 +6,16 @@ class Schema(BaseModel):
     eps: float
 
 class File(BaseModel):
-    path: str = Field(description="Path to the file that needs to be created")
-    purpose: str = Field(description="Purpose of the file, example: main application logic, data pocessing module, UI component etc.")
+    file_path: str = Field(description="Path to the file that needs to be created")
+    file_description: str = Field(description="Description of the file to be created")
+    file_purpose: str = Field(description="Purpose of the file, example: main application logic, data pocessing module, UI component etc.")
     
 class Plan(BaseModel):
     name: str = Field(description="Name of the app to be built")
     description: str = Field(description="One line description of the app")
     techstack: list[str] = Field(description="List of technologies to be used, e.g. React, Flask, Python, ReactJS, JavaScript etc.")
     features: list[str] = Field(description="List of features a user should have, e.g. Login, Signup, User Profile, User Authentication, Dashboard etc.")
-    files: list[File] = Field(description="List of files to be created with a Path and Purpose of the file")
+    files: list[File] = Field(description="List of files to be created with a Path, Description and Purpose of the file")
 
 class ImplementationTask(BaseModel):
     filepath: str = Field(description="Path to the file where this task will be implemented")
@@ -21,4 +23,9 @@ class ImplementationTask(BaseModel):
 
 class TaskPlan(BaseModel):
     implementation_steps: list[ImplementationTask] = Field(description="A list of steps to be taken to implement the project. Each step should be self-contained and explicitly detailed, but also carry forward the context of previous steps.")
-    model_config = ConfigDict(extra = 'allow')
+    model_config = ConfigDict(extra = 'allow') # To allow additional fields like 'plan' to be attached, it will allow additional fields without raising validation errors, for example attaching the original plan for context
+
+class CoderState(BaseModel):
+    task_plan: TaskPlan = Field(description="The plan for the tasks to be implemented")
+    current_step_idx : int = Field(0, description = "Index of the current step in the implementation steps")
+    current_file_content : Optional[str] = Field(None, description="The content of the file currently being edited or created")
