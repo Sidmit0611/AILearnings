@@ -24,13 +24,13 @@ def planner_agent(state: dict) -> dict:
         response3 = llm.with_structured_output(Plan).invoke(prompt) #main response for this code
         
         print(response3)
-        # print("*********** Planner Response:*********** \n")
-        # print("Name of the application: ", response3.name)
-        # print("Description: ", response3.description)
-        # print("Techstack: ", response3.techstack)
-        # print("Features: ", response3.features)
-        # for file in response3.files:
-        #     print(f"File Path: {file.file_path}, Description: {file.file_description}, Purpose: {file.file_purpose}")
+        print("*********** Planner Response:*********** \n")
+        print("Name of the application: ", response3.name)
+        print("Description: ", response3.description)
+        print("Techstack: ", response3.techstack)
+        print("Features: ", response3.features)
+        for file in response3.files:
+            print(f"File Path: {file.file_path}, Description: {file.file_description}, Purpose: {file.file_purpose}")
     
         return {"plan" : response3}
     except Exception as e:
