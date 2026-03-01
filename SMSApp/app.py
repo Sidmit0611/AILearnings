@@ -3,6 +3,7 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 import pandas as pd
+import os
 load_dotenv()
 
 # This is a simple FastAPI application that receives SMS messages
@@ -34,7 +35,11 @@ async def receive_sms(request: Request):
 
     ### Store the transaction dump in csv file to view them later, you can use pandas for this
     data = pd.DataFrame([transaction.model_dump()])
-    data.to_csv("transactions.csv", index=False)
+    # Replace the to_csv line with this
+    if os.path.exists("transactions.csv"):
+        data.to_csv("transactions.csv", mode="a", header=False, index=False)
+    else:
+        data.to_csv("transactions.csv", mode="w", header=True, index=False)
     
     return {
         "status": "ok",
