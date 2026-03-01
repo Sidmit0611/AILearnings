@@ -30,21 +30,25 @@ async def receive_sms(request: Request):
 
     message_text = data.get("Transaction Message") or data.get("formatted_message", "")
 
-    transaction: TransactionDetails = structured_llm.invoke(
-        f"Extract the transaction details from this bank SMS message: {message_text}"
-    )
+    try:
+        transaction: TransactionDetails = structured_llm.invoke(
+            f"Extract the transaction details from this bank SMS message: {message_text}"
+        )
 
-    print("Parsed Transaction:", transaction.model_dump())
+        print("Parsed Transaction:", transaction.model_dump())
 
-    ### Store the transaction dump in csv file to view them later, you can use pandas for this
-    data = pd.DataFrame([transaction.model_dump()])
-    # Replace the to_csv line with this
-    if os.path.exists("transactions.csv"):
-        data.to_csv("transactions.csv", mode="a", header=False, index=False)
-    else:
-        data.to_csv("transactions.csv", mode="w", header=True, index=False)
-    
-    return {
-        "status": "ok",
-        "transaction": transaction.model_dump()
-    }
+        ### Store the transaction dump in csv file to view them later, you can use pandas for this
+        data = pd.DataFrame([transaction.model_dump()])
+        # Replace the to_csv line with this
+        if os.path.exists("transactions.csv"):
+            data.to_csv("transactions.csv", mode="a", header=False, index=False)
+        else:
+            data.to_csv("transactions.csv", mode="w", header=True, index=False)
+        
+        return {
+            "status": "ok ✅",
+            "transaction": transaction.model_dump()
+        }
+    except Exception as e:
+        print("Error parsing transaction:", str(e))
+        return {"status": "⚠️ skipped", "reason": "Not a valid transaction SMS"}
