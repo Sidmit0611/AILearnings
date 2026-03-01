@@ -9,8 +9,11 @@ load_dotenv()
 # This is a simple FastAPI application that receives SMS messages
 app = FastAPI()
 
+import os
+print("GROQ KEY:", os.getenv("GROQ_API_KEY"))
+
 ### Loading the model
-llm = ChatGroq(model="openai/gpt-oss-120b")
+llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"))
 
 class TransactionDetails(BaseModel):
     date: str = Field(description="Date of the transaction in DD-MonthName-YYYY format")
