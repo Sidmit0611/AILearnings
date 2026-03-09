@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "smart-expense-tracker-488808",
+  "private_key_id": "39e242f037ac0192b67bdddd8c3d6e2d6bd8b7b5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC/SmMs6uT2iNzh\nzZE2LjtROuMHhzxUywdDL/jXV4TycPv7Oh2CtS7qGbopzVG/fPAy/ekc/HUCSDAx\nhMUEacrLOYe2fbhbE+0Y/c5VgJnnmAPQihH9iyXeLzF+cXAka6UmxoioI4FzXamd\nHI8kiSu2/moZpOJG6PBbpMlqRUj8VHBUEfi/GcdHBuQuZRqU++yCkbqlZTE2JS57\nf/vakp+Wj/qBCI47Y+C3HRImfnocW1Cib38fhOxir7sBRZ76QLos0qBQw9LaGp9Z\nrJxY9Ty375VfJXY9jc6JSJiGuihl2zMMZpJHKXR1w00UPj5td8/rg5r3Ke4BNQbq\nmdnx/f2DAgMBAAECggEAXEjF2cikly9l6GWk9Y+OPFz9ZAdhGsMsCMTe9vyY/eF2\nHzhlPkaskHHC9yG/m3Lp6p/GU56T0HsFDQ6xgbSMCkkB6Q9z3jSZwOHJJkS5expC\nVNwXW8tChJMd/JM7d8aa0T8cdIlUjVSVXF+HyyeF+G16wE5kf7MnKf8w0F0GnfxE\nDWhEaf0D3oG5pmJXpUZX7EmJo3WBBx/JC7WeakbpENKVqiMMYAEVb463h6HFrtO1\nMUTfUp4wMvtEqrD4ERXnjsZCAlzLDBMMQYEXedasMY7hBIUGwRLZOdFh/2MQXkYk\napfBqL3yMaRfvimVIDhn7oUvxi6ttGRZ8KdJo7AvwQKBgQDzUpaCc5K44QT50nFy\n8xcAM+kjbmdbnjoBYWST9IXo+X2LVvVi435v92Dm/SxSKqXYB1dJRUyLH1KeTifo\nAUehZLMZNyrMFzgxzVADNyrup0wbmR5gLWINVxNeUIIvpznPDUfRzbfwGuflcq3f\nKPK0C93GQxnQ43JT7ZMUubLl4QKBgQDJQc0xmUlseOSL9NiFloa41pPhH5kxpGGd\nzIJM5XKmkVFwwOwx2lNeXSEvWD11MSML44l/Xk8gKaDBrK6WK+kyhj+JXLLNvF2e\nps2r8ySLdDKVelqFyqdwzfq8n1tEoEuXFQVXekv68hIB21ELOz6j5v2fj3QBmCME\nb2bMIHMH4wKBgBWX5rN8/jBaB88D1f2VhR0HflEeox2GVS96LSrUMG4Udge/l9dG\nyRm2omrdXOmNz1n0jNJ7y+csyHA0D2aPdoPkI+DA/JNQHDSPO+KNKsozHpX0aLWw\nUVtNtvJPwr3n4UF2tEDyOLieKqY6HyQGxkMkKnJF0iyvgp3gH4VfVXkBAoGAL1sx\nalNUaJbFyHzzmfOCfenX4CgsRvcUFSpzGp7+7FzTWgG7Uju6VED7twU/aN0IDxsa\nVoMdgUbqUchNSH7Kn53hQ3QxiqGhMdy0Fpre5YWRBYVF2aeG4M9HCa1Br5M8Vi+X\nEy9uw3zEafVuS4NESRLoaOw7csiWrMt919hm2NsCgYALZ8KDrz1zlLaOlOGavOu/\nFBD5MxIXF/gabggg42aOItZ42axTf+/8GPnc0hoYJD0Dpo93kFUZTusH/zWATwf1\noYLqpCZ+UEdCqe3SPezdvKdWOs1KQx27cNNgUXjTXi/jqQxn8iS3yV/rZveI5AxA\nojkdDBgbmcOsqtehwlk8jg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "smart-ai-expense-tracker@smart-expense-tracker-488808.iam.gserviceaccount.com",
+  "client_id": "102910152765800080519",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/smart-ai-expense-tracker%40smart-expense-tracker-488808.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

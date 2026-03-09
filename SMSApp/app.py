@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 import pandas as pd
 import os
+import gspread
+from google.oauth2.service_account import Credentials
 load_dotenv()
 
 # This is a simple FastAPI application that receives SMS messages
@@ -11,9 +13,14 @@ app = FastAPI()
 
 import os
 print("GROQ KEY:", os.getenv("GROQ_API_KEY"))
-
-### Loading the model
 llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"))
+
+### ------------------------------- Google Sheets Setup -------------------------------
+scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+creds = Credentials.from_service_account_file("smart-expense-tracker-creds.json", scopes=scopes)
+client = gspread.authorize(creds)
+sheet_id = "1PVJXZ86PE8Q4ZLeB5l245aLYUkQlteKPwp3Cyb4PQgc"
+### ----------------------------------------------------------------------------------
 
 class TransactionDetails(BaseModel):
     date: str = Field(description="Date of the transaction in DD-MonthName-YYYY format")
