@@ -2,13 +2,11 @@ from fastapi import FastAPI, Request
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-import pandas as pd
 import os
 import gspread
 from google.oauth2.service_account import Credentials
 load_dotenv()
 
-# This is a simple FastAPI application that receives SMS messages
 app = FastAPI()
 
 import os
@@ -20,6 +18,7 @@ scopes = ["https://www.googleapis.com/auth/spreadsheets"]
 creds = Credentials.from_service_account_file("smart-expense-tracker-creds.json", scopes=scopes)
 client = gspread.authorize(creds)
 sheet_id = "1PVJXZ86PE8Q4ZLeB5l245aLYUkQlteKPwp3Cyb4PQgc"
+sheet = client.open_by_key(sheet_id).sheet1
 ### ----------------------------------------------------------------------------------
 
 class TransactionDetails(BaseModel):
@@ -29,6 +28,27 @@ class TransactionDetails(BaseModel):
     description: str = Field(description="A short, human-readable summary of the transaction")
 
 structured_llm = llm.with_structured_output(TransactionDetails)
+
+
+def store_in_google_sheets(transaction: TransactionDetails):
+    """Appends a transaction row to Google Sheets. Adds headers if the sheet is empty."""
+    headers = ["date", "amount", "credited_to", "description"]
+
+    # If sheet is empty, add headers first
+    existing_data = sheet.get_all_values()
+    if not existing_data:
+        sheet.append_row(headers)
+
+    # Append the transaction as a new row
+    row = [
+        transaction.date,
+        transaction.amount,
+        transaction.credited_to,
+        transaction.description
+    ]
+    sheet.append_row(row)
+    print("Transaction saved to Google Sheets ✅")
+
 
 @app.post("/sms")
 async def receive_sms(request: Request):
@@ -44,14 +64,8 @@ async def receive_sms(request: Request):
 
         print("Parsed Transaction:", transaction.model_dump())
 
-        ### Store the transaction dump in csv file to view them later, you can use pandas for this
-        data = pd.DataFrame([transaction.model_dump()])
-        # Replace the to_csv line with this
-        if os.path.exists("transactions.csv"):
-            data.to_csv("transactions.csv", mode="a", header=False, index=False)
-        else:
-            data.to_csv("transactions.csv", mode="w", header=True, index=False)
-        
+        store_in_google_sheets(transaction)
+
         return {
             "status": "ok ✅",
             "transaction": transaction.model_dump()
