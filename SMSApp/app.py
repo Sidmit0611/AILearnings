@@ -54,18 +54,13 @@ def store_in_google_sheets(transaction: TransactionDetails):
 async def receive_sms(request: Request):
     data = await request.json()
     print("Received SMS:", data)
-
     message_text = data.get("Transaction Message") or data.get("formatted_message", "")
-
     try:
         transaction: TransactionDetails = structured_llm.invoke(
             f"Extract the transaction details from this bank SMS message: {message_text}"
         )
-
         print("Parsed Transaction:", transaction.model_dump())
-
         store_in_google_sheets(transaction)
-
         return {
             "status": "ok ✅",
             "transaction": transaction.model_dump()
