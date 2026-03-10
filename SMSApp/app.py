@@ -15,9 +15,11 @@ llm = ChatGroq(model="openai/gpt-oss-120b", api_key=os.getenv("GROQ_API_KEY"))
 
 ### ------------------------------- Google Sheets Setup -------------------------------
 scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_file("smart-expense-tracker-creds.json", scopes=scopes)
+import json
+creds_json = json.loads(os.getenv("GOOGLE_CREDS_JSON"))
+creds = Credentials.from_service_account_info(creds_json, scopes=scopes)
 client = gspread.authorize(creds)
-sheet_id = "1PVJXZ86PE8Q4ZLeB5l245aLYUkQlteKPwp3Cyb4PQgc"
+sheet_id = "1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4"
 sheet = client.open_by_key(sheet_id).sheet1
 ### ----------------------------------------------------------------------------------
 
