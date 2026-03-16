@@ -244,6 +244,74 @@ section[data-testid="stSidebar"] * { color: var(--text) !important; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+    .block-container { padding: 0 0.6rem 1.5rem 0.6rem !important; }
+
+    /* KPI — single column */
+    .kpi-grid { grid-template-columns: 1fr !important; gap: 10px !important; margin-bottom: 16px !important; }
+    .kpi-card { padding: 14px 16px !important; }
+    .kpi-value { font-size: 1.7rem !important; }
+    .kpi-icon { top: 12px !important; right: 14px !important; font-size: 1rem !important; }
+
+    /* Stack ALL streamlit columns vertically */
+    [data-testid="column"] { min-width: 100% !important; flex: 1 1 100% !important; }
+    [data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; gap: 4px !important; }
+
+    /* Charts scrollable */
+    .stPlotlyChart { overflow-x: auto !important; }
+    .js-plotly-plot .plotly { min-width: 320px; }
+
+    /* Filters full width */
+    div[data-baseweb="select"] { min-width: 100% !important; }
+    div[data-baseweb="select"] > div { font-size: 0.88rem !important; min-height: 42px !important; }
+
+    /* Buttons full width and taller for touch */
+    .stButton > button {
+        width: 100% !important;
+        min-height: 44px !important;
+        font-size: 0.82rem !important;
+        padding: 10px 16px !important;
+    }
+
+    /* Transaction log — compact rows */
+    .tx-row-date    { font-size: 0.7rem !important; }
+    .tx-row-amount  { font-size: 0.78rem !important; }
+    .tx-row-payee   { font-size: 0.75rem !important; }
+
+    /* Hide less important columns on mobile */
+    .tx-col-desc    { display: none !important; }
+    .tx-col-addinfo { display: none !important; }
+
+    /* Period badge smaller */
+    .period-badge { font-size: 0.6rem !important; padding: 2px 6px !important; }
+
+    /* Hide timestamp */
+    .mobile-hide { display: none !important; }
+
+    /* Section headers */
+    .section-title { font-size: 0.68rem !important; letter-spacing: 0.08em !important; }
+
+    /* Expander for filters */
+    .streamlit-expanderHeader {
+        font-family: var(--mono) !important;
+        font-size: 0.78rem !important;
+        background: var(--card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        color: var(--text2) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .block-container { padding: 0 0.4rem 1rem 0.4rem !important; }
+    .kpi-value { font-size: 1.45rem !important; }
+    .kpi-label { font-size: 0.54rem !important; }
+    .kpi-card { padding: 12px 14px !important; }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -371,10 +439,18 @@ if df_all.empty:
 # ─────────────────────────────────────────────
 years = sorted(df_all["year"].unique(), reverse=True)
 
-col_brand, col_year, col_month, col_cat, col_spacer, col_refresh, col_time = st.columns([2, 1.2, 1.5, 1.8, 1, 1, 1.5])
-
+# Brand + sync row
+col_brand, col_sync = st.columns([5, 1])
 with col_brand:
-    st.markdown('<div style="padding-top:8px"><span style="font-family:\'Syne\',sans-serif;font-size:1.25rem;font-weight:800;color:#f59e0b;letter-spacing:0.08em">💸 RUPEE RADAR</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="padding:10px 0 4px 0"><span style="font-family:\'Syne\',sans-serif;font-size:1.25rem;font-weight:800;color:#f59e0b;letter-spacing:0.08em">💸 RUPEE RADAR</span></div>', unsafe_allow_html=True)
+with col_sync:
+    st.markdown('<div style="padding-top:10px"></div>', unsafe_allow_html=True)
+    if st.button("↺", help="Refresh data"):
+        st.cache_data.clear()
+        st.rerun()
+
+# Filter row — 3 equal columns, stacks naturally on mobile
+col_year, col_month, col_cat = st.columns(3)
 
 with col_year:
     st.markdown('<div class="command-bar-label">YEAR</div>', unsafe_allow_html=True)
@@ -401,16 +477,7 @@ with col_cat:
     st.markdown('<div class="command-bar-label">CATEGORY</div>', unsafe_allow_html=True)
     selected_category = st.selectbox("category", cat_options, label_visibility="collapsed")
 
-with col_refresh:
-    st.markdown('<div style="padding-top:22px"></div>', unsafe_allow_html=True)
-    if st.button("↺ SYNC"):
-        st.cache_data.clear()
-        st.rerun()
-
-with col_time:
-    st.markdown(f'<div style="padding-top:26px;font-family:\'JetBrains Mono\',monospace;font-size:0.65rem;color:#2d3748;text-align:right">{datetime.now().strftime("%H:%M:%S")}</div>', unsafe_allow_html=True)
-
-st.markdown('<div style="height:1px;background:linear-gradient(90deg,#1e2535,transparent);margin-bottom:24px"></div>', unsafe_allow_html=True)
+st.markdown('<div style="height:1px;background:linear-gradient(90deg,#1e2535,transparent);margin:12px 0 20px 0"></div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 #  Filter
@@ -480,7 +547,7 @@ with col_l:
         ),
         hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
     ))
-    fig.update_layout(bargap=0.35, xaxis_title="", yaxis_title="")
+    fig.update_layout(bargap=0.35, xaxis_title="", yaxis_title="", height=280)
     st.plotly_chart(dark_fig(fig), use_container_width=True)
 
 with col_r:
@@ -496,8 +563,9 @@ with col_r:
     ))
     fig2.update_layout(
         showlegend=True,
-        legend=dict(orientation="v", font=dict(size=10)),
-        margin=dict(l=0, r=0, t=10, b=10),
+        legend=dict(orientation="h", font=dict(size=9), y=-0.15),
+        margin=dict(l=0, r=0, t=10, b=40),
+        height=280,
         annotations=[dict(
             text=f"<b>₹{total_spend:,.0f}</b>",
             x=0.5, y=0.5, font=dict(size=14, color="#f59e0b", family="JetBrains Mono"),
@@ -523,8 +591,9 @@ with col_a:
     ))
     fig3.update_layout(
         xaxis_title="", yaxis_title="",
-        yaxis=dict(tickfont=dict(size=11, color="#8892a4")),
+        yaxis=dict(tickfont=dict(size=10, color="#8892a4")),
         margin=dict(l=4, r=60, t=10, b=8),
+        height=260,
     )
     st.plotly_chart(dark_fig(fig3), use_container_width=True)
 
@@ -541,7 +610,7 @@ with col_b:
         fillcolor="rgba(245,158,11,0.06)",
         hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
     ))
-    fig4.update_layout(xaxis_title="", yaxis_title="")
+    fig4.update_layout(xaxis_title="", yaxis_title="", height=260)
     st.plotly_chart(dark_fig(fig4), use_container_width=True)
 
 # ─────────────────────────────────────────────
