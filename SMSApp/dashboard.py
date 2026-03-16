@@ -349,10 +349,10 @@ if df_all.empty:
     st.stop()
 
 # ─── HEADER ────────────────────────────────────────────────────
-col_brand, col_sync = st.columns([9, 1])
-with col_brand:
-    st.markdown('<div class="brand">💸 Rupee Radar</div><div class="brand-sub">Personal Expense Tracker</div>', unsafe_allow_html=True)
-with col_sync:
+col_left, col_center, col_right = st.columns([1, 4, 1])
+with col_center:
+    st.markdown('<div style="text-align:center"><div class="brand">💸 RUPEE RADAR</div><div class="brand-sub">Personal Expense Tracker</div></div>', unsafe_allow_html=True)
+with col_right:
     st.markdown('<div style="padding-top:8px"></div>', unsafe_allow_html=True)
     if st.button("⟳ Sync"):
         st.cache_data.clear()
