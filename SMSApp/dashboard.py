@@ -1,724 +1,549 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import gspread
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
-import os
-import json
+import os, json
 from datetime import datetime
 
 load_dotenv()
-
 st.set_page_config(page_title="Rupee Radar", page_icon="💸", layout="wide")
 
-# ─────────────────────────────────────────────
-#  CSS — Premium Dark Financial Terminal
-# ─────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
-    --bg:        #080a0f;
-    --surface:   #0e1117;
-    --card:      #111520;
-    --card2:     #141824;
-    --border:    #1e2535;
-    --border2:   #252d40;
-    --accent:    #f59e0b;
-    --accent2:   #3b82f6;
-    --accent3:   #10b981;
-    --danger:    #ef4444;
-    --text:      #e8eaf0;
-    --text2:     #8892a4;
-    --text3:     #4a5568;
-    --mono:      'JetBrains Mono', monospace;
-    --sans:      'DM Sans', sans-serif;
-    --display:   'Syne', sans-serif;
-    --glow-gold: 0 0 20px rgba(245,158,11,0.15);
-    --glow-blue: 0 0 20px rgba(59,130,246,0.15);
+    --bg:       #0c0e14;
+    --card:     #12151e;
+    --card2:    #161923;
+    --border:   #1e2535;
+    --accent:   #f5a623;
+    --blue:     #5b9cf6;
+    --green:    #3ecf8e;
+    --text:     #ffffff;
+    --text2:    #b8c4d4;
+    --text3:    #6b7a99;
+    --sans:     'Manrope', sans-serif;
+    --display:  'Space Grotesk', sans-serif;
 }
 
-/* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; }
 html, body, [class*="css"] {
     font-family: var(--sans) !important;
     background: var(--bg) !important;
     color: var(--text) !important;
+    -webkit-font-smoothing: antialiased;
 }
 .stApp { background: var(--bg) !important; }
-.block-container { padding: 0 2rem 2rem 2rem !important; max-width: 100% !important; }
-
-/* ── Hide default streamlit chrome ── */
+.block-container { padding: 2rem 2.5rem 3rem 2.5rem !important; max-width: 100% !important; }
 #MainMenu, footer, header { visibility: hidden; }
 .stDeployButton { display: none; }
 
-/* ── Top command bar ── */
-.command-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 0 20px 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-}
-.command-bar-brand {
+/* ── BRAND ── */
+.brand {
     font-family: var(--display);
-    font-size: 1.1rem;
-    font-weight: 800;
+    font-size: 1.8rem;
+    font-weight: 700;
     color: var(--accent);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-right: 16px;
-    white-space: nowrap;
+    line-height: 1;
 }
-.command-bar-label {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+.brand-sub {
+    font-size: 0.82rem;
     color: var(--text3);
-    margin-bottom: 2px;
+    font-weight: 400;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
 }
 
-/* ── Metric cards ── */
-.kpi-grid {
+/* ── FILTER LABELS ── */
+.flabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-bottom: 6px;
+}
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ── KPI CARDS ── */
+.kpi-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
 }
-.kpi-card {
+.kpi {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
+    border-radius: 16px;
+    padding: 24px 26px;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
 }
-.kpi-card:hover { border-color: var(--border2); }
-.kpi-card::after {
+.kpi::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 60%);
-    pointer-events: none;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
 }
-.kpi-card.gold  { border-left: 3px solid var(--accent);  box-shadow: var(--glow-gold); }
-.kpi-card.blue  { border-left: 3px solid var(--accent2); box-shadow: var(--glow-blue); }
-.kpi-card.green { border-left: 3px solid var(--accent3); }
+.kpi-l::after { background: var(--accent); }
+.kpi-m::after { background: var(--blue); }
+.kpi-r::after { background: var(--green); }
 
 .kpi-label {
-    font-family: var(--mono);
-    font-size: 0.62rem;
+    font-size: 0.76rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.1em;
     color: var(--text3);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
-.kpi-value {
-    font-family: var(--mono);
-    font-size: 2.1rem;
-    font-weight: 600;
-    color: var(--text);
+.kpi-val {
+    font-family: var(--display);
+    font-size: 2.6rem;
+    font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.02em;
+    color: var(--text);
 }
-.kpi-value.gold  { color: var(--accent); }
-.kpi-value.green { color: var(--accent3); }
+.kpi-val.amber { color: var(--accent); }
+.kpi-val.gn    { color: var(--green); font-size: 1.9rem; }
 .kpi-sub {
-    font-family: var(--sans);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     color: var(--text3);
-    margin-top: 7px;
+    margin-top: 10px;
+    font-weight: 500;
 }
-.kpi-icon {
-    position: absolute;
-    top: 18px; right: 20px;
-    font-size: 1.4rem;
-    opacity: 0.2;
+.kpi-badge {
+    display: inline-block;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.25);
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
 }
 
-/* ── Section header ── */
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-    margin-top: 4px;
-}
-.section-title {
+/* ── SECTION TITLE ── */
+.sec {
     font-family: var(--display);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--text2);
-}
-.section-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--border2), transparent);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
 }
 
-/* ── Chart containers ── */
-.chart-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-}
-
-/* ── Selectboxes ── */
+/* ── SELECTBOX ── */
 div[data-baseweb="select"] > div {
     background: var(--card2) !important;
-    border-color: var(--border2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
     color: var(--text) !important;
-    border-radius: 8px !important;
-    font-family: var(--mono) !important;
-    font-size: 0.82rem !important;
+    font-size: 0.92rem !important;
+    font-weight: 500 !important;
+    min-height: 44px !important;
 }
 div[data-baseweb="select"] * { color: var(--text) !important; }
+div[data-baseweb="popover"] { background: var(--card2) !important; border: 1px solid var(--border) !important; }
 
-/* ── Dataframe ── */
-.stDataFrame { border-radius: 10px; overflow: hidden; }
-.stDataFrame [data-testid="stDataFrameResizable"] {
-    background: var(--card) !important;
-    border: 1px solid var(--border) !important;
-}
-
-/* ── Sidebar ── */
-section[data-testid="stSidebar"] {
-    background: var(--surface) !important;
-    border-right: 1px solid var(--border) !important;
-    width: 220px !important;
-}
-section[data-testid="stSidebar"] * { color: var(--text) !important; }
-
-/* ── Button ── */
+/* ── BUTTON ── */
 .stButton > button {
     background: var(--card2) !important;
-    border: 1px solid var(--border2) !important;
+    border: 1px solid var(--border) !important;
     color: var(--text2) !important;
-    border-radius: 8px !important;
-    font-family: var(--mono) !important;
-    font-size: 0.75rem !important;
-    letter-spacing: 0.05em !important;
-    padding: 6px 14px !important;
+    border-radius: 10px !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    padding: 10px 18px !important;
     transition: all 0.15s !important;
+    font-family: var(--sans) !important;
 }
 .stButton > button:hover {
     border-color: var(--accent) !important;
     color: var(--accent) !important;
+    background: rgba(245,166,35,0.06) !important;
 }
 
-/* ── Period badge ── */
-.period-badge {
-    display: inline-block;
-    background: rgba(245,158,11,0.1);
-    border: 1px solid rgba(245,158,11,0.25);
+/* ── TRANSACTION LOG TABLE ── */
+.txh {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    padding: 8px 6px 12px 6px;
+    border-bottom: 2px solid var(--border);
+}
+.txd {
+    font-size: 0.88rem;
+    color: var(--text2);
+    padding: 10px 6px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+.txamt {
+    font-family: var(--display);
+    font-size: 0.96rem;
+    font-weight: 700;
     color: var(--accent);
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    padding: 3px 10px;
-    border-radius: 4px;
-    letter-spacing: 0.08em;
+    padding: 10px 6px;
 }
+.txpay {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 10px 6px;
+    line-height: 1.3;
+}
+.txdesc {
+    font-size: 0.82rem;
+    color: var(--text3);
+    padding: 10px 6px;
+    line-height: 1.5;
+}
+.txrow-div { height: 1px; background: var(--border); opacity: 0.6; }
 
-/* ── No data ── */
+/* ── NO DATA ── */
 .no-data {
     text-align: center;
     padding: 80px 20px;
     color: var(--text3);
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-/* ══════════════════════════════════════
-   MOBILE RESPONSIVE
-══════════════════════════════════════ */
+/* ═══════════════ MOBILE ═══════════════ */
 @media (max-width: 768px) {
-    .block-container { padding: 0 0.6rem 1.5rem 0.6rem !important; }
+    .block-container { padding: 1.25rem 1rem 2rem 1rem !important; }
 
-    /* KPI — single column */
-    .kpi-grid { grid-template-columns: 1fr !important; gap: 10px !important; margin-bottom: 16px !important; }
-    .kpi-card { padding: 14px 16px !important; }
-    .kpi-value { font-size: 1.7rem !important; }
-    .kpi-icon { top: 12px !important; right: 14px !important; font-size: 1rem !important; }
+    /* KPI stack */
+    .kpi-row { grid-template-columns: 1fr !important; gap: 12px !important; margin-bottom: 24px !important; }
+    .kpi { padding: 20px 22px !important; }
+    .kpi-val { font-size: 2.2rem !important; }
+    .kpi-val.gn { font-size: 1.6rem !important; }
+    .kpi-label { font-size: 0.72rem !important; }
+    .kpi-sub { font-size: 0.76rem !important; }
 
-    /* Stack ALL streamlit columns vertically */
+    /* Stack all columns */
     [data-testid="column"] { min-width: 100% !important; flex: 1 1 100% !important; }
-    [data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; gap: 4px !important; }
 
-    /* Charts scrollable */
-    .stPlotlyChart { overflow-x: auto !important; }
-    .js-plotly-plot .plotly { min-width: 320px; }
+    /* Larger selects for touch */
+    div[data-baseweb="select"] > div { min-height: 48px !important; font-size: 1rem !important; }
 
-    /* Filters full width */
-    div[data-baseweb="select"] { min-width: 100% !important; }
-    div[data-baseweb="select"] > div { font-size: 0.88rem !important; min-height: 42px !important; }
+    /* Bigger buttons */
+    .stButton > button { width: 100% !important; min-height: 48px !important; font-size: 0.92rem !important; }
 
-    /* Buttons full width and taller for touch */
-    .stButton > button {
-        width: 100% !important;
-        min-height: 44px !important;
-        font-size: 0.82rem !important;
-        padding: 10px 16px !important;
-    }
+    /* Transaction log */
+    .txh  { font-size: 0.68rem !important; }
+    .txd  { font-size: 0.84rem !important; padding: 8px 4px !important; }
+    .txamt{ font-size: 0.9rem !important;  padding: 8px 4px !important; }
+    .txpay{ font-size: 0.86rem !important; padding: 8px 4px !important; }
+    .txdesc { display: none !important; }
 
-    /* Transaction log — compact rows */
-    .tx-row-date    { font-size: 0.7rem !important; }
-    .tx-row-amount  { font-size: 0.78rem !important; }
-    .tx-row-payee   { font-size: 0.75rem !important; }
-
-    /* Hide less important columns on mobile */
-    .tx-col-desc    { display: none !important; }
-    .tx-col-addinfo { display: none !important; }
-
-    /* Period badge smaller */
-    .period-badge { font-size: 0.6rem !important; padding: 2px 6px !important; }
-
-    /* Hide timestamp */
-    .mobile-hide { display: none !important; }
-
-    /* Section headers */
-    .section-title { font-size: 0.68rem !important; letter-spacing: 0.08em !important; }
-
-    /* Expander for filters */
-    .streamlit-expanderHeader {
-        font-family: var(--mono) !important;
-        font-size: 0.78rem !important;
-        background: var(--card) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 8px !important;
-        color: var(--text2) !important;
-    }
+    .brand { font-size: 1.5rem !important; }
+    .sec { font-size: 0.76rem !important; }
+    .flabel { font-size: 0.72rem !important; }
 }
 
 @media (max-width: 480px) {
-    .block-container { padding: 0 0.4rem 1rem 0.4rem !important; }
-    .kpi-value { font-size: 1.45rem !important; }
-    .kpi-label { font-size: 0.54rem !important; }
-    .kpi-card { padding: 12px 14px !important; }
+    .block-container { padding: 1rem 0.75rem 1.5rem 0.75rem !important; }
+    .kpi-val { font-size: 2rem !important; }
+    .kpi-val.gn { font-size: 1.4rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────
-#  Helpers
-# ─────────────────────────────────────────────
-def auto_categorize(row: pd.Series) -> str:
-    KEYWORDS = {
-        "🍽️ Dining & Cafes":         ["restaurant", "cafe", "dhaba", "hotel", "lassi", "corner", "skanda", "star bazaar"],
-        "🛵 Online Food Delivery":    ["swiggy", "zomato", "blinkit", "instamart"],
-        "🛒 Groceries":               ["grocery", "kirana", "bigbasket", "grofers", "zepto"],
-        "🥦 Vegetables & Fruits":     ["vegetable", "sabzi", "fruit", "market", "mandi"],
-        "🥛 Milk & Dairy":            ["milk", "dairy", "amul", "nandini"],
-        "🚗 Transport & Fuel":        ["uber", "ola", "rapido", "metro", "petrol", "fuel", "irctc", "flight", "bus"],
-        "💪 Health & Fitness":        ["pharmacy", "hospital", "clinic", "doctor", "medicine", "apollo", "gym", "fitness"],
-        "📺 OTT & Subscriptions":     ["netflix", "spotify", "prime", "hotstar", "youtube", "disney"],
-        "🌐 Internet & Phone Bills":  ["jio", "airtel", "bsnl", "broadband", "recharge", "internet"],
-        "🏡 Household Supplies":      ["amazon", "flipkart", "household", "cleaning", "supplies"],
-        "✈️ Travel & Hotels":         ["hotel", "booking", "makemytrip", "goibibo", "oyo", "flight"],
-        "💸 Transfers & Payments":    ["transfer", "neft", "imps", "upi", "sent", "pay"],
+# ─── Helpers ───────────────────────────────────────────────────
+def auto_categorize(row):
+    KW = {
+        "🍽️ Dining & Cafes":        ["restaurant","cafe","dhaba","lassi","skanda","star bazaar","bazaar"],
+        "🛵 Online Food Delivery":   ["swiggy","zomato","blinkit","instamart"],
+        "🛒 Groceries":              ["grocery","kirana","bigbasket","grofers","zepto"],
+        "🥦 Vegetables & Fruits":    ["vegetable","sabzi","fruit","market","mandi","million"],
+        "🥛 Milk & Dairy":           ["milk","dairy","amul","nandini"],
+        "🚗 Transport & Fuel":       ["uber","ola","rapido","metro","petrol","fuel","irctc","flight"],
+        "💪 Health & Fitness":       ["pharmacy","hospital","clinic","doctor","medicine","apollo","gym"],
+        "📺 OTT & Subscriptions":    ["netflix","spotify","prime","hotstar","youtube","disney"],
+        "🌐 Internet & Phone Bills": ["jio","airtel","bsnl","broadband","recharge","internet"],
+        "🏡 Household Supplies":     ["amazon","flipkart","household","cleaning"],
+        "✈️ Travel & Hotels":        ["hotel","booking","makemytrip","goibibo","oyo"],
+        "💳 CC Bill":                ["standard chartered","hdfc","icici credit","axis credit","cc bill"],
+        "💸 Transfers & Payments":   ["transfer","neft","imps","upi","sent","pay"],
     }
-    text = f"{row.get('credited_to', '')} {row.get('description', '')} {row.get('additional_description', '')}".lower()
-    for category, keywords in KEYWORDS.items():
-        if any(kw in text for kw in keywords):
-            return category
+    text = f"{row.get('credited_to','')} {row.get('description','')} {row.get('additional_description','')}".lower()
+    for cat, kws in KW.items():
+        if any(k in text for k in kws):
+            return cat
     return "💸 Transfers & Payments"
 
 def parse_date(val):
-    if not val or str(val).strip() == "":
-        return pd.NaT
+    if not val or str(val).strip() == "": return pd.NaT
     val = str(val).strip()
-    formats = [
-        "%d-%B-%Y", "%d-%b-%Y", "%d-%b-%y",
-        "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y",
-        "%d %B %Y", "%d %b %Y",
-    ]
-    for fmt in formats:
-        try:
-            return datetime.strptime(val, fmt)
-        except ValueError:
-            continue
-    try:
-        return pd.to_datetime(val, dayfirst=True)
-    except Exception:
-        return pd.NaT
+    for fmt in ["%d-%B-%Y","%d-%b-%Y","%d-%b-%y","%d-%m-%Y","%Y-%m-%d","%d/%m/%Y","%d %B %Y","%d %b %Y"]:
+        try: return datetime.strptime(val, fmt)
+        except: continue
+    try: return pd.to_datetime(val, dayfirst=True)
+    except: return pd.NaT
 
-def dark_fig(fig):
+def chart_base(fig, height=280):
     fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="JetBrains Mono, monospace", color="#4a5568", size=11),
-        margin=dict(l=8, r=8, t=28, b=8),
-        legend=dict(
-            bgcolor="rgba(14,17,23,0.9)",
-            bordercolor="#1e2535",
-            borderwidth=1,
-            font=dict(size=10, color="#8892a4"),
-        ),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Manrope", color="#b8c4d4", size=12),
+        margin=dict(l=8, r=8, t=8, b=8), height=height,
+        legend=dict(bgcolor="rgba(0,0,0,0)", borderwidth=0, font=dict(size=12, color="#b8c4d4")),
     )
-    fig.update_xaxes(gridcolor="#141824", linecolor="#1e2535", tickfont=dict(size=10, color="#4a5568"))
-    fig.update_yaxes(gridcolor="#141824", linecolor="#1e2535", tickfont=dict(size=10, color="#4a5568"))
+    fig.update_xaxes(gridcolor="#1a2030", linecolor="#1e2535", tickfont=dict(size=12, color="#6b7a99"))
+    fig.update_yaxes(gridcolor="#1a2030", linecolor="#1e2535", tickfont=dict(size=12, color="#6b7a99"))
     return fig
 
-COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#ec4899"]
+COLORS = ["#f5a623","#5b9cf6","#3ecf8e","#f87171","#a78bfa","#22d3ee","#fb923c","#ec4899","#84cc16","#e879f9"]
 
-# ─────────────────────────────────────────────
-#  Load Data
-# ─────────────────────────────────────────────
+# ─── Load Data ─────────────────────────────────────────────────
 @st.cache_data(ttl=60)
 def load_data():
     try:
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
         creds_raw = os.getenv("GOOGLE_CREDS_JSON")
-        if not creds_raw:
-            return pd.DataFrame()
-        creds_json = json.loads(creds_raw)
-        creds = Credentials.from_service_account_info(creds_json, scopes=scopes)
+        if not creds_raw: return pd.DataFrame()
+        creds = Credentials.from_service_account_info(json.loads(creds_raw), scopes=scopes)
         client = gspread.authorize(creds)
-        sheet_id = os.getenv("SHEET_ID", "1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4")
-        sheet = client.open_by_key(sheet_id).sheet1
+        sheet = client.open_by_key(os.getenv("SHEET_ID","1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4")).sheet1
         data = sheet.get_all_records()
-        if not data:
-            return pd.DataFrame()
+        if not data: return pd.DataFrame()
         df = pd.DataFrame(data)
         df.columns = [c.lower().strip() for c in df.columns]
-        df.rename(columns={
-            "recipient":                     "credited_to",
-            "description from text message": "description",
-            "additional description":        "additional_description",
-        }, inplace=True)
-        df["amount"] = df["amount"].astype(str).str.replace(r"[^\d.]", "", regex=True)
-        df["amount"] = pd.to_numeric(df["amount"], errors="coerce").fillna(0)
-        df["date"] = df["date"].apply(parse_date)
+        df.rename(columns={"recipient":"credited_to","description from text message":"description","additional description":"additional_description"}, inplace=True)
+        df["amount"] = pd.to_numeric(df["amount"].astype(str).str.replace(r"[^\d.]","",regex=True), errors="coerce").fillna(0)
+        df["date"] = pd.to_datetime(df["date"].apply(parse_date)).dt.normalize()
         df.dropna(subset=["date"], inplace=True)
-        df["date"] = pd.to_datetime(df["date"]).dt.normalize()
         df["month_num"]  = df["date"].dt.month
         df["month_name"] = df["date"].dt.strftime("%B")
         df["year"]       = df["date"].dt.year
         if "category" not in df.columns or df["category"].astype(str).str.strip().eq("").all():
             df["category"] = df.apply(auto_categorize, axis=1)
         else:
-            df["category"] = df["category"].astype(str).str.strip()
+            df["category"] = df["category"].astype(str).str.strip().replace("Other (specify below)","")
             mask = df["category"].eq("")
-            df.loc[mask, "category"] = df[mask].apply(auto_categorize, axis=1)
-        # Clean up any stuck placeholder values from previous edits
-        df["category"] = df["category"].replace("Other (specify below)", "")
-        mask2 = df["category"].eq("")
-        df.loc[mask2, "category"] = df[mask2].apply(auto_categorize, axis=1)
-        df = df.reset_index(drop=True)  # ensure clean 0-based index matching sheet rows
-        return df
+            df.loc[mask,"category"] = df[mask].apply(auto_categorize, axis=1)
+        return df.reset_index(drop=True)
     except Exception as e:
-        st.error(f"Connection error: {e}")
+        st.error(f"Error: {e}")
         return pd.DataFrame()
 
-# ─────────────────────────────────────────────
-#  Load & guard
-# ─────────────────────────────────────────────
+# ─── Load ──────────────────────────────────────────────────────
 df_all = load_data()
 if df_all.empty:
-    st.markdown('<div class="no-data">⬡ NO TRANSACTION DATA FOUND</div>', unsafe_allow_html=True)
+    st.markdown('<div class="no-data">⬡ No transaction data found</div>', unsafe_allow_html=True)
     st.stop()
 
-# ─────────────────────────────────────────────
-#  Top command bar — brand + filters + refresh
-# ─────────────────────────────────────────────
-years = sorted(df_all["year"].unique(), reverse=True)
-
-# Brand + sync row
-col_brand, col_sync = st.columns([5, 1])
+# ─── HEADER ────────────────────────────────────────────────────
+col_brand, col_sync = st.columns([9, 1])
 with col_brand:
-    st.markdown('<div style="padding:10px 0 4px 0"><span style="font-family:\'Syne\',sans-serif;font-size:1.25rem;font-weight:800;color:#f59e0b;letter-spacing:0.08em">💸 RUPEE RADAR</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand">💸 Rupee Radar</div><div class="brand-sub">Personal Expense Tracker</div>', unsafe_allow_html=True)
 with col_sync:
-    st.markdown('<div style="padding-top:10px"></div>', unsafe_allow_html=True)
-    if st.button("↺", help="Refresh data"):
+    st.markdown('<div style="padding-top:8px"></div>', unsafe_allow_html=True)
+    if st.button("⟳ Sync"):
         st.cache_data.clear()
         st.rerun()
 
-# Filter row — 3 equal columns, stacks naturally on mobile
-col_year, col_month, col_cat = st.columns(3)
+st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
-with col_year:
-    st.markdown('<div class="command-bar-label">YEAR</div>', unsafe_allow_html=True)
-    selected_year = st.selectbox("year", years, label_visibility="collapsed")
+# ─── FILTERS ───────────────────────────────────────────────────
+years = sorted(df_all["year"].unique(), reverse=True)
+col_y, col_m, col_c = st.columns(3)
+
+with col_y:
+    st.markdown('<div class="flabel">Year</div>', unsafe_allow_html=True)
+    selected_year = st.selectbox("yr", years, label_visibility="collapsed")
 
 df_year = df_all[df_all["year"] == selected_year]
 available_months = df_year[["month_num","month_name"]].drop_duplicates().sort_values("month_num")
-month_options = ["ALL MONTHS"] + available_months["month_name"].str.upper().tolist()
+month_options = ["All Months"] + available_months["month_name"].tolist()
 
-with col_month:
-    st.markdown('<div class="command-bar-label">MONTH</div>', unsafe_allow_html=True)
-    selected_month_display = st.selectbox("month", month_options, label_visibility="collapsed")
+with col_m:
+    st.markdown('<div class="flabel">Month</div>', unsafe_allow_html=True)
+    selected_month = st.selectbox("mo", month_options, label_visibility="collapsed")
 
-# Build category options from month-filtered data
-if selected_month_display == "ALL MONTHS":
-    df_month_filtered = df_year.copy()
-else:
-    df_month_filtered = df_year[df_year["month_name"] == selected_month_display.title()]
+df_mf = df_year.copy() if selected_month == "All Months" else df_year[df_year["month_name"] == selected_month]
+cat_options = ["All Categories"] + sorted(df_mf["category"].dropna().unique().tolist())
 
-available_cats = sorted(df_month_filtered["category"].dropna().unique().tolist())
-cat_options = ["ALL CATEGORIES"] + available_cats
+with col_c:
+    st.markdown('<div class="flabel">Category</div>', unsafe_allow_html=True)
+    selected_cat = st.selectbox("ca", cat_options, label_visibility="collapsed")
 
-with col_cat:
-    st.markdown('<div class="command-bar-label">CATEGORY</div>', unsafe_allow_html=True)
-    selected_category = st.selectbox("category", cat_options, label_visibility="collapsed")
+st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
-st.markdown('<div style="height:1px;background:linear-gradient(90deg,#1e2535,transparent);margin:12px 0 20px 0"></div>', unsafe_allow_html=True)
+# ─── APPLY FILTER ──────────────────────────────────────────────
+df = df_mf.copy()
+if selected_cat != "All Categories":
+    df = df[df["category"] == selected_cat]
 
-# ─────────────────────────────────────────────
-#  Filter
-# ─────────────────────────────────────────────
-# Start from month-filtered data
-df = df_month_filtered.copy()
-if selected_month_display == "ALL MONTHS":
-    period_label = f"ALL OF {selected_year}"
-else:
-    period_label = f"{selected_month_display} {selected_year}"
+period = selected_month if selected_month != "All Months" else f"All of {selected_year}"
+if selected_cat != "All Categories":
+    period = f"{selected_cat} · {period}"
 
-# Apply category filter
-if selected_category != "ALL CATEGORIES":
-    df = df[df["category"] == selected_category]
-    period_label = f"{selected_category}  ·  {period_label}"
-
-# ─────────────────────────────────────────────
-#  KPI Cards
-# ─────────────────────────────────────────────
-total_spend  = df["amount"].sum()
-total_txns   = len(df)
-top_category = df.groupby("category")["amount"].sum().idxmax() if total_txns > 0 else "—"
+# ─── KPI ───────────────────────────────────────────────────────
+total   = df["amount"].sum()
+n_txns  = len(df)
+top_cat = df.groupby("category")["amount"].sum().idxmax() if n_txns > 0 else "—"
+top_cat_clean = top_cat.split(" ",1)[-1] if n_txns > 0 and " " in top_cat else top_cat
 
 st.markdown(f"""
-<div class="kpi-grid">
-    <div class="kpi-card gold">
-        <div class="kpi-icon">₹</div>
-        <div class="kpi-label">Total Debited</div>
-        <div class="kpi-value gold">₹{total_spend:,.0f}</div>
-        <div class="kpi-sub"><span class="period-badge">{period_label}</span></div>
-    </div>
-    <div class="kpi-card blue">
-        <div class="kpi-icon">#</div>
-        <div class="kpi-label">Transactions</div>
-        <div class="kpi-value">{total_txns}</div>
-        <div class="kpi-sub">recorded entries</div>
-    </div>
-    <div class="kpi-card green">
-        <div class="kpi-icon">↑</div>
-        <div class="kpi-label">Top Spend Category</div>
-        <div class="kpi-value green" style="font-size:1.3rem">{top_category}</div>
-        <div class="kpi-sub">highest allocation</div>
-    </div>
+<div class="kpi-row">
+  <div class="kpi kpi-l">
+    <div class="kpi-label">Total Spent</div>
+    <div class="kpi-val amber">₹{total:,.0f}</div>
+    <div class="kpi-sub"><span class="kpi-badge">{period}</span></div>
+  </div>
+  <div class="kpi kpi-m">
+    <div class="kpi-label">Transactions</div>
+    <div class="kpi-val">{n_txns}</div>
+    <div class="kpi-sub">recorded entries</div>
+  </div>
+  <div class="kpi kpi-r">
+    <div class="kpi-label">Top Category</div>
+    <div class="kpi-val gn">{top_cat_clean}</div>
+    <div class="kpi-sub">highest spend</div>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────
-#  Charts
-# ─────────────────────────────────────────────
 if df.empty:
-    st.markdown('<div class="no-data">⬡ NO TRANSACTIONS FOR THIS PERIOD</div>', unsafe_allow_html=True)
+    st.markdown('<div class="no-data">No transactions for this period.</div>', unsafe_allow_html=True)
     st.stop()
 
-# Row 1
-col_l, col_r = st.columns([3, 2], gap="medium")
+# ─── CHARTS ROW 1 ──────────────────────────────────────────────
+c1, c2 = st.columns([3, 2], gap="large")
 
-with col_l:
-    st.markdown('<div class="section-header"><span class="section-title">Daily Spending</span><div class="section-line"></div></div>', unsafe_allow_html=True)
+with c1:
+    st.markdown('<div class="sec">Daily Spending</div>', unsafe_allow_html=True)
     daily = df.groupby(df["date"].dt.date)["amount"].sum().reset_index()
-    daily.columns = ["date", "amount"]
-    fig = go.Figure(go.Bar(
+    daily.columns = ["date","amount"]
+    fig1 = go.Figure(go.Bar(
         x=daily["date"], y=daily["amount"],
-        marker=dict(
-            color=daily["amount"],
-            colorscale=[[0, "#1a2235"], [0.5, "#b45309"], [1, "#f59e0b"]],
-            line=dict(width=0),
-        ),
+        marker=dict(color=daily["amount"], colorscale=[[0,"#1a2535"],[0.5,"#b45309"],[1,"#f5a623"]], line=dict(width=0)),
         hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
     ))
-    fig.update_layout(bargap=0.35, xaxis_title="", yaxis_title="", height=280)
-    st.plotly_chart(dark_fig(fig), use_container_width=True)
+    fig1.update_layout(bargap=0.3, xaxis_title="", yaxis_title="")
+    st.plotly_chart(chart_base(fig1, 280), use_container_width=True, config={"displayModeBar":False})
 
-with col_r:
-    st.markdown('<div class="section-header"><span class="section-title">Category Split</span><div class="section-line"></div></div>', unsafe_allow_html=True)
-    cat_data = df.groupby("category")["amount"].sum().reset_index().sort_values("amount", ascending=False)
-    fig2 = go.Figure(go.Pie(
-        labels=cat_data["category"],
-        values=cat_data["amount"],
-        hole=0.62,
-        marker=dict(colors=COLORS, line=dict(color="#080a0f", width=2)),
-        textfont=dict(family="JetBrains Mono", size=10),
-        hovertemplate="<b>%{label}</b><br>₹%{value:,.0f} (%{percent})<extra></extra>",
-    ))
-    fig2.update_layout(
-        showlegend=True,
-        legend=dict(orientation="h", font=dict(size=9), y=-0.15),
-        margin=dict(l=0, r=0, t=10, b=40),
-        height=280,
-        annotations=[dict(
-            text=f"<b>₹{total_spend:,.0f}</b>",
-            x=0.5, y=0.5, font=dict(size=14, color="#f59e0b", family="JetBrains Mono"),
-            showarrow=False
-        )]
-    )
-    st.plotly_chart(dark_fig(fig2), use_container_width=True)
-
-# Row 2
-col_a, col_b = st.columns([2, 3], gap="medium")
-
-with col_a:
-    st.markdown('<div class="section-header"><span class="section-title">Category Breakdown</span><div class="section-line"></div></div>', unsafe_allow_html=True)
-    fig3 = go.Figure(go.Bar(
-        x=cat_data["amount"],
-        y=cat_data["category"],
-        orientation="h",
+with c2:
+    st.markdown('<div class="sec">Category Breakdown</div>', unsafe_allow_html=True)
+    cat_data = df.groupby("category")["amount"].sum().reset_index().sort_values("amount")
+    cat_data["label"] = cat_data["category"].str.split(" ",n=1).str[-1]
+    fig2 = go.Figure(go.Bar(
+        x=cat_data["amount"], y=cat_data["label"], orientation="h",
         marker=dict(color=COLORS[:len(cat_data)], line=dict(width=0)),
         text=[f"₹{v:,.0f}" for v in cat_data["amount"]],
         textposition="outside",
-        textfont=dict(family="JetBrains Mono", size=10, color="#8892a4"),
+        textfont=dict(size=12, color="#b8c4d4"),
         hovertemplate="<b>%{y}</b><br>₹%{x:,.0f}<extra></extra>",
     ))
-    fig3.update_layout(
+    fig2.update_layout(
         xaxis_title="", yaxis_title="",
-        yaxis=dict(tickfont=dict(size=10, color="#8892a4")),
-        margin=dict(l=4, r=60, t=10, b=8),
-        height=260,
+        yaxis=dict(tickfont=dict(size=12, color="#b8c4d4")),
+        margin=dict(l=4, r=80, t=8, b=8),
     )
-    st.plotly_chart(dark_fig(fig3), use_container_width=True)
+    st.plotly_chart(chart_base(fig2, 280), use_container_width=True, config={"displayModeBar":False})
 
-with col_b:
-    st.markdown('<div class="section-header"><span class="section-title">Monthly Trend</span><div class="section-line"></div></div>', unsafe_allow_html=True)
-    monthly = df_year.groupby(["month_num","month_name"])["amount"].sum().reset_index().sort_values("month_num")
-    fig4 = go.Figure()
-    fig4.add_trace(go.Scatter(
-        x=monthly["month_name"], y=monthly["amount"],
-        mode="lines+markers",
-        line=dict(color="#f59e0b", width=2.5, shape="spline"),
-        marker=dict(size=8, color="#f59e0b", line=dict(color="#080a0f", width=2)),
-        fill="tozeroy",
-        fillcolor="rgba(245,158,11,0.06)",
-        hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
-    ))
-    fig4.update_layout(xaxis_title="", yaxis_title="", height=260)
-    st.plotly_chart(dark_fig(fig4), use_container_width=True)
+# ─── CHART ROW 2 ───────────────────────────────────────────────
+st.markdown('<div class="sec" style="margin-top:12px">Monthly Trend</div>', unsafe_allow_html=True)
+monthly = df_year.groupby(["month_num","month_name"])["amount"].sum().reset_index().sort_values("month_num")
+fig3 = go.Figure()
+fig3.add_trace(go.Scatter(
+    x=monthly["month_name"], y=monthly["amount"],
+    mode="lines+markers" if len(monthly) > 1 else "markers",
+    line=dict(color="#f5a623", width=2.5, shape="spline"),
+    marker=dict(size=8, color="#f5a623", line=dict(color="#0c0e14", width=2)),
+    fill="tozeroy", fillcolor="rgba(245,166,35,0.07)",
+    hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
+))
+fig3.update_layout(xaxis_title="", yaxis_title="")
+st.plotly_chart(chart_base(fig3, 220), use_container_width=True, config={"displayModeBar":False})
 
-# ─────────────────────────────────────────────
-#  Transaction Log — Row-by-row category editing
-# ─────────────────────────────────────────────
+# ─── TRANSACTION LOG ───────────────────────────────────────────
 CATEGORIES = [
-    "🏠 House Rent",
-    "🧹 House Maintenance & Maid",
-    "🛒 Groceries",
-    "🥦 Vegetables & Fruits",
-    "🥛 Milk & Dairy",
-    "🏡 Household Supplies",
-    "🍽️ Dining & Cafes",
-    "🛵 Online Food Delivery",
-    "🚗 Transport & Fuel",
-    "🅿️ Parking",
-    "🔥 Cooking Gas",
-    "💪 Health & Fitness",
-    "📺 OTT & Subscriptions",
-    "🌐 Internet & Phone Bills",
-    "✈️ Travel & Hotels",
-    "🎀 Decoration & Gifts",
-    "👕 Laundry & Clothing",
-    "💸 Transfers & Payments",
+    "🏠 House Rent","🧹 House Maintenance & Maid","🛒 Groceries",
+    "🥦 Vegetables & Fruits","🥛 Milk & Dairy","🏡 Household Supplies",
+    "🍽️ Dining & Cafes","🛵 Online Food Delivery","🚗 Transport & Fuel",
+    "🅿️ Parking","🔥 Cooking Gas","💪 Health & Fitness",
+    "📺 OTT & Subscriptions","🌐 Internet & Phone Bills","✈️ Travel & Hotels",
+    "🎀 Decoration & Gifts","👕 Laundry & Clothing","💸 Transfers & Payments",
     "💳 CC Bill",
 ]
 
-def update_category_in_sheet(sheet_row_0based: int, new_category: str) -> bool:
+def update_category_in_sheet(sheet_row_0based, new_category):
     try:
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        creds_json = json.loads(os.getenv("GOOGLE_CREDS_JSON"))
-        creds = Credentials.from_service_account_info(creds_json, scopes=scopes)
-        client = gspread.authorize(creds)
-        sheet = client.open_by_key(
-            os.getenv("SHEET_ID", "1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4")
+        creds = Credentials.from_service_account_info(json.loads(os.getenv("GOOGLE_CREDS_JSON")), scopes=scopes)
+        sheet = gspread.authorize(creds).open_by_key(
+            os.getenv("SHEET_ID","1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4")
         ).sheet1
         sheet.update_cell(sheet_row_0based + 2, 5, new_category)
         return True
     except Exception as e:
-        st.error(f"Sheet update failed: {e}")
+        st.error(f"Update failed: {e}")
         return False
 
-st.markdown("<div class='section-header' style='margin-top:8px'><span class='section-title'>Transaction Log</span><div class='section-line'></div></div>", unsafe_allow_html=True)
+st.markdown('<div class="sec" style="margin-top:12px">Transaction Log</div>', unsafe_allow_html=True)
 
-# Build table — keep original df_all index as sheet row reference
-cols = ["date", "amount", "credited_to", "category", "description", "additional_description"]
+cols = ["date","amount","credited_to","category","description","additional_description"]
 cols = [c for c in cols if c in df.columns]
 tbl = df[cols].copy()
-tbl["_sheet_row"] = tbl.index          # 0-based index = sheet row (df_all was reset_index on load)
-tbl["date"] = tbl["date"].dt.strftime("%d %b %Y")
-tbl["amount"] = tbl["amount"].apply(lambda x: f"₹{x:,.2f}")
+tbl["_sheet_row"] = tbl.index
+tbl["date"]   = tbl["date"].dt.strftime("%d %b %Y")
+tbl["amount"] = tbl["amount"].apply(lambda x: f"₹{x:,.0f}")
 tbl = tbl.sort_values("date", ascending=False).reset_index(drop=True)
 
-# ── Table header ──
-hcols = st.columns([1.2, 0.9, 1.6, 1.8, 3.2, 1.5])
-for col, label in zip(hcols, ["Date", "Amount", "Paid To", "Category", "Description", "Additional Info"]):
-    col.markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:#4a5568;padding:6px 4px 4px 4px;border-bottom:1px solid #1e2535'>{label}</div>", unsafe_allow_html=True)
+# Table header
+hc = st.columns([1.2, 1.0, 1.8, 2.2, 3.5, 1.5])
+for col, lbl in zip(hc, ["Date","Amount","Paid To","Category","Description","Info"]):
+    col.markdown(f"<div class='txh'>{lbl}</div>", unsafe_allow_html=True)
 
-# ── Track pending saves ──
 if "cat_changes" not in st.session_state:
-    st.session_state.cat_changes = {}   # {sheet_row: new_category}
+    st.session_state.cat_changes = {}
 
-# ── Render each row ──
 for idx, row in tbl.iterrows():
-    sheet_row = int(row["_sheet_row"])
-    current_cat = st.session_state.cat_changes.get(sheet_row, row["category"])
-    # Ensure current value is in list (handles old values from sheet)
-    if current_cat not in CATEGORIES:
-        current_cat = CATEGORIES[0]
-    cat_idx = CATEGORIES.index(current_cat)
+    sr  = int(row["_sheet_row"])
+    cur = st.session_state.cat_changes.get(sr, row["category"])
+    if cur not in CATEGORIES: cur = CATEGORIES[0]
 
-    rcols = st.columns([1.2, 0.9, 1.6, 1.8, 3.2, 1.5])
-    rcols[0].markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:0.78rem;color:#8892a4;padding:7px 4px'>{row['date']}</div>", unsafe_allow_html=True)
-    rcols[1].markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:0.82rem;color:#f59e0b;padding:7px 4px'>{row['amount']}</div>", unsafe_allow_html=True)
-    rcols[2].markdown(f"<div style='font-size:0.82rem;color:#e8eaf0;padding:7px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>{row.get('credited_to','')}</div>", unsafe_allow_html=True)
+    rc = st.columns([1.2, 1.0, 1.8, 2.2, 3.5, 1.5])
+    rc[0].markdown(f"<div class='txd'>{row['date']}</div>", unsafe_allow_html=True)
+    rc[1].markdown(f"<div class='txamt'>{row['amount']}</div>", unsafe_allow_html=True)
+    rc[2].markdown(f"<div class='txpay'>{row.get('credited_to','')}</div>", unsafe_allow_html=True)
+    sel = rc[3].selectbox("c", CATEGORIES, index=CATEGORIES.index(cur), key=f"cat_{sr}", label_visibility="collapsed")
+    rc[4].markdown(f"<div class='txdesc'>{row.get('description','')}</div>", unsafe_allow_html=True)
+    rc[5].markdown(f"<div class='txdesc'>{row.get('additional_description','')}</div>", unsafe_allow_html=True)
+    st.markdown("<div class='txrow-div'></div>", unsafe_allow_html=True)
 
-    selected = rcols[3].selectbox(
-        label="cat",
-        options=CATEGORIES,
-        index=cat_idx,
-        key=f"cat_{sheet_row}",
-        label_visibility="collapsed",
-    )
+    if sel != row["category"]:
+        st.session_state.cat_changes[sr] = sel
+    elif sr in st.session_state.cat_changes and st.session_state.cat_changes[sr] == row["category"]:
+        del st.session_state.cat_changes[sr]
 
-    # Track if changed
-    if selected != row["category"]:
-        st.session_state.cat_changes[sheet_row] = selected
-    elif sheet_row in st.session_state.cat_changes and st.session_state.cat_changes[sheet_row] == row["category"]:
-        del st.session_state.cat_changes[sheet_row]
-
-    rcols[4].markdown(f"<div style='font-size:0.75rem;color:#64748b;padding:7px 4px;overflow:hidden;text-overflow:ellipsis'>{row.get('description','')}</div>", unsafe_allow_html=True)
-    rcols[5].markdown(f"<div style='font-size:0.75rem;color:#64748b;padding:7px 4px'>{row.get('additional_description','')}</div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:1px;background:#0e1117;margin:0'></div>", unsafe_allow_html=True)
-
-# ── Save bar ──
-pending_changes = st.session_state.cat_changes
-if pending_changes:
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-    n = len(pending_changes)
-    col_msg, col_save, col_discard = st.columns([4, 1, 1])
-    col_msg.markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:0.72rem;color:#f59e0b;padding-top:10px'>⬡ {n} unsaved change(s)</div>", unsafe_allow_html=True)
-    with col_save:
-        if st.button("✓ SAVE", key="save_btn"):
-            saved = 0
-            for sr, cat in pending_changes.items():
-                if update_category_in_sheet(sr, cat):
-                    saved += 1
+# Save bar
+pending = st.session_state.cat_changes
+if pending:
+    n = len(pending)
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+    cm, cs, cd = st.columns([5, 1, 1])
+    cm.markdown(f"<div style='font-size:0.86rem;font-weight:600;color:#f5a623;padding-top:12px'>⬡ {n} unsaved change(s)</div>", unsafe_allow_html=True)
+    with cs:
+        if st.button("✓ Save", key="save_btn"):
+            saved = sum(1 for sr, cat in pending.items() if update_category_in_sheet(sr, cat))
             if saved == n:
                 st.success(f"✅ {saved} update(s) saved!")
                 st.session_state.cat_changes = {}
@@ -726,7 +551,7 @@ if pending_changes:
                 st.rerun()
             else:
                 st.error("Some updates failed.")
-    with col_discard:
-        if st.button("✕ DISCARD", key="discard_btn"):
+    with cd:
+        if st.button("✕ Discard", key="discard_btn"):
             st.session_state.cat_changes = {}
             st.rerun()
