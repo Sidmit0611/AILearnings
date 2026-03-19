@@ -2,4 +2,4 @@
 *.csv
 SMSApp/__pycache__/app.cpython-311.pyc
 *.pyc
-*.json
+SMSApp/smart-expense-tracker-creds.json

@@ -12,3 +12,4 @@ gspread>=6.0.0
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
+httpx
