@@ -13,7 +13,6 @@ st.set_page_config(page_title="Rupee Radar", page_icon="💸", layout="wide")
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
-
 :root {
     --bg:       #0c0e14;
     --card:     #12151e;
@@ -28,7 +27,6 @@ st.markdown("""
     --sans:     'Manrope', sans-serif;
     --display:  'Space Grotesk', sans-serif;
 }
-
 *, *::before, *::after { box-sizing: border-box; }
 html, body, [class*="css"] {
     font-family: var(--sans) !important;
@@ -40,227 +38,79 @@ html, body, [class*="css"] {
 .block-container { padding: 2rem 2.5rem 3rem 2.5rem !important; max-width: 100% !important; }
 #MainMenu, footer, header { visibility: hidden; }
 .stDeployButton { display: none; }
-
-/* ── BRAND ── */
-.brand {
-    font-family: var(--display);
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--accent);
-    line-height: 1;
-}
-.brand-sub {
-    font-size: 0.82rem;
-    color: var(--text3);
-    font-weight: 400;
-    margin-top: 4px;
-    letter-spacing: 0.02em;
-}
-
-/* ── FILTER LABELS ── */
-.flabel {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text3);
-    margin-bottom: 6px;
-}
-
-/* ── DIVIDER ── */
+.brand { font-family: var(--display); font-size: 1.8rem; font-weight: 700; color: var(--accent); line-height: 1; }
+.brand-sub { font-size: 0.82rem; color: var(--text3); font-weight: 400; margin-top: 4px; letter-spacing: 0.02em; text-align: center; }
+.flabel { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 6px; }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-/* ── KPI CARDS ── */
-.kpi-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 32px;
-}
-.kpi {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px 26px;
-    position: relative;
-    overflow: hidden;
-}
-.kpi::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 16px 16px 0 0;
-}
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; position: relative; overflow: hidden; }
+.kpi::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
 .kpi-l::after { background: var(--accent); }
 .kpi-m::after { background: var(--blue); }
 .kpi-r::after { background: var(--green); }
-
-.kpi-label {
-    font-size: 0.76rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text3);
-    margin-bottom: 12px;
-}
-.kpi-val {
-    font-family: var(--display);
-    font-size: 2.6rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--text);
-}
+.kpi-label { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 12px; }
+.kpi-val { font-family: var(--display); font-size: 2.6rem; font-weight: 700; line-height: 1; color: var(--text); }
 .kpi-val.amber { color: var(--accent); }
 .kpi-val.gn    { color: var(--green); font-size: 1.9rem; }
-.kpi-sub {
-    font-size: 0.78rem;
-    color: var(--text3);
-    margin-top: 10px;
-    font-weight: 500;
-}
-.kpi-badge {
-    display: inline-block;
-    background: rgba(245,166,35,0.1);
-    border: 1px solid rgba(245,166,35,0.25);
-    color: var(--accent);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    padding: 3px 10px;
-    border-radius: 6px;
-    text-transform: uppercase;
-}
-
-/* ── SECTION TITLE ── */
-.sec {
-    font-family: var(--display);
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text2);
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-}
-
-/* ── SELECTBOX ── */
-div[data-baseweb="select"] > div {
-    background: var(--card2) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 10px !important;
-    color: var(--text) !important;
-    font-size: 0.92rem !important;
-    font-weight: 500 !important;
-    min-height: 44px !important;
-}
+.kpi-sub { font-size: 0.78rem; color: var(--text3); margin-top: 10px; font-weight: 500; }
+.kpi-badge { display: inline-block; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); color: var(--accent); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; padding: 3px 10px; border-radius: 6px; text-transform: uppercase; }
+.sec { font-family: var(--display); font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text2); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+div[data-baseweb="select"] > div { background: var(--card2) !important; border: 1px solid var(--border) !important; border-radius: 10px !important; color: var(--text) !important; font-size: 0.92rem !important; font-weight: 500 !important; min-height: 44px !important; }
 div[data-baseweb="select"] * { color: var(--text) !important; }
 div[data-baseweb="popover"] { background: var(--card2) !important; border: 1px solid var(--border) !important; }
+.stButton > button { background: var(--card2) !important; border: 1px solid var(--border) !important; color: var(--text2) !important; border-radius: 10px !important; font-size: 0.86rem !important; font-weight: 600 !important; padding: 10px 18px !important; transition: all 0.15s !important; font-family: var(--sans) !important; }
+.stButton > button:hover { border-color: var(--accent) !important; color: var(--accent) !important; background: rgba(245,166,35,0.06) !important; }
 
-/* ── BUTTON ── */
-.stButton > button {
-    background: var(--card2) !important;
-    border: 1px solid var(--border) !important;
-    color: var(--text2) !important;
-    border-radius: 10px !important;
-    font-size: 0.86rem !important;
-    font-weight: 600 !important;
-    padding: 10px 18px !important;
-    transition: all 0.15s !important;
-    font-family: var(--sans) !important;
+/* ── TRANSACTION LOG ── */
+.tx-scroll-wrapper {
+    max-height: 480px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    padding: 0 12px 12px 12px;
 }
-.stButton > button:hover {
-    border-color: var(--accent) !important;
-    color: var(--accent) !important;
-    background: rgba(245,166,35,0.06) !important;
-}
-
-/* ── TRANSACTION LOG TABLE ── */
-.txh {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text3);
-    padding: 8px 6px 12px 6px;
-    border-bottom: 2px solid var(--border);
-}
-.txd {
-    font-size: 0.88rem;
-    color: var(--text2);
-    padding: 10px 6px;
-    font-weight: 500;
-    line-height: 1.4;
-}
-.txamt {
-    font-family: var(--display);
-    font-size: 0.96rem;
-    font-weight: 700;
-    color: var(--accent);
-    padding: 10px 6px;
-}
-.txpay {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text);
-    padding: 10px 6px;
-    line-height: 1.3;
-}
-.txdesc {
-    font-size: 0.82rem;
-    color: var(--text3);
-    padding: 10px 6px;
-    line-height: 1.5;
-}
+.tx-scroll-wrapper::-webkit-scrollbar { width: 5px; }
+.tx-scroll-wrapper::-webkit-scrollbar-track { background: var(--card); }
+.tx-scroll-wrapper::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.tx-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+.txh { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); padding: 14px 6px 12px 6px; border-bottom: 2px solid var(--border); position: sticky; top: 0; background: var(--card); z-index: 10; }
+.txd { font-size: 0.88rem; color: var(--text2); padding: 10px 6px; font-weight: 500; line-height: 1.4; }
+.txamt { font-family: var(--display); font-size: 0.96rem; font-weight: 700; color: var(--accent); padding: 10px 6px; }
+.txpay { font-size: 0.9rem; font-weight: 600; color: var(--text); padding: 10px 6px; line-height: 1.3; }
+.txdesc { font-size: 0.82rem; color: var(--text3); padding: 10px 6px; line-height: 1.5; }
 .txrow-div { height: 1px; background: var(--border); opacity: 0.6; }
 
-/* ── NO DATA ── */
-.no-data {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--text3);
-    font-size: 1rem;
-    font-weight: 500;
+/* ── TEXT INPUT for desc editing ── */
+.stTextInput input {
+    background: var(--card2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    color: var(--text) !important;
+    font-size: 0.82rem !important;
+    font-family: var(--sans) !important;
+    padding: 6px 10px !important;
 }
+.stTextInput input:focus { border-color: var(--accent) !important; }
 
-/* ═══════════════ MOBILE ═══════════════ */
+.no-data { text-align: center; padding: 80px 20px; color: var(--text3); font-size: 1rem; font-weight: 500; }
+
 @media (max-width: 768px) {
     .block-container { padding: 1.25rem 1rem 2rem 1rem !important; }
-
-    /* KPI stack */
     .kpi-row { grid-template-columns: 1fr !important; gap: 12px !important; margin-bottom: 24px !important; }
     .kpi { padding: 20px 22px !important; }
     .kpi-val { font-size: 2.2rem !important; }
     .kpi-val.gn { font-size: 1.6rem !important; }
-    .kpi-label { font-size: 0.72rem !important; }
-    .kpi-sub { font-size: 0.76rem !important; }
-
-    /* Stack all columns */
     [data-testid="column"] { min-width: 100% !important; flex: 1 1 100% !important; }
-
-    /* Larger selects for touch */
     div[data-baseweb="select"] > div { min-height: 48px !important; font-size: 1rem !important; }
-
-    /* Bigger buttons */
     .stButton > button { width: 100% !important; min-height: 48px !important; font-size: 0.92rem !important; }
-
-    /* Transaction log */
-    .txh  { font-size: 0.68rem !important; }
-    .txd  { font-size: 0.84rem !important; padding: 8px 4px !important; }
-    .txamt{ font-size: 0.9rem !important;  padding: 8px 4px !important; }
-    .txpay{ font-size: 0.86rem !important; padding: 8px 4px !important; }
     .txdesc { display: none !important; }
-
+    .tx-scroll-wrapper { max-height: 380px; }
     .brand { font-size: 1.5rem !important; }
-    .sec { font-size: 0.76rem !important; }
-    .flabel { font-size: 0.72rem !important; }
 }
-
 @media (max-width: 480px) {
     .block-container { padding: 1rem 0.75rem 1.5rem 0.75rem !important; }
     .kpi-val { font-size: 2rem !important; }
-    .kpi-val.gn { font-size: 1.4rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -311,7 +161,7 @@ def chart_base(fig, height=280):
 COLORS = ["#f5a623","#5b9cf6","#3ecf8e","#f87171","#a78bfa","#22d3ee","#fb923c","#ec4899","#84cc16","#e879f9"]
 
 # ─── Load Data ─────────────────────────────────────────────────
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def load_data():
     try:
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -341,6 +191,26 @@ def load_data():
     except Exception as e:
         st.error(f"Error: {e}")
         return pd.DataFrame()
+
+@st.cache_resource
+def get_sheet():
+    """Cached sheet connection — reuses same connection instead of reconnecting every time."""
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_info(json.loads(os.getenv("GOOGLE_CREDS_JSON")), scopes=scopes)
+    return gspread.authorize(creds).open_by_key(
+        os.getenv("SHEET_ID","1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4")
+    ).sheet1
+
+def update_sheet_cell(sheet_row_0based, col_index, value):
+    """Generic cell updater. col_index: 5=category, 6=additional_description"""
+    try:
+        sheet = get_sheet()
+        sheet_row = int(sheet_row_0based) + 2  # +1 for header, +1 for 1-indexing
+        sheet.update_cell(sheet_row, col_index, str(value))
+        return True
+    except Exception as e:
+        st.error(f"Update failed (row={sheet_row_0based}, col={col_index}): {e}")
+        return False
 
 # ─── Load ──────────────────────────────────────────────────────
 df_all = load_data()
@@ -484,22 +354,9 @@ CATEGORIES = [
     "💳 CC Bill",
 ]
 
-def update_category_in_sheet(sheet_row_0based, new_category):
-    try:
-        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        creds = Credentials.from_service_account_info(json.loads(os.getenv("GOOGLE_CREDS_JSON")), scopes=scopes)
-        sheet = gspread.authorize(creds).open_by_key(
-            os.getenv("SHEET_ID","1WeJECZJijBNH3WVABLoKqrNroSzIzW5qGo18T3QW-W4")
-        ).sheet1
-        sheet.update_cell(sheet_row_0based + 2, 5, new_category)
-        return True
-    except Exception as e:
-        st.error(f"Update failed: {e}")
-        return False
-
 st.markdown('<div class="sec" style="margin-top:12px">Transaction Log</div>', unsafe_allow_html=True)
 
-cols = ["date","amount","credited_to","category","description","additional_description"]
+cols = ["date","amount","credited_to","category","additional_description","description"]
 cols = [c for c in cols if c in df.columns]
 tbl = df[cols].copy()
 tbl["_sheet_row"] = tbl.index
@@ -507,51 +364,107 @@ tbl["date"]   = tbl["date"].dt.strftime("%d %b %Y")
 tbl["amount"] = tbl["amount"].apply(lambda x: f"₹{x:,.0f}")
 tbl = tbl.sort_values("date", ascending=False).reset_index(drop=True)
 
-# Table header
-hc = st.columns([1.2, 1.0, 1.8, 2.2, 3.5, 1.5])
-for col, lbl in zip(hc, ["Date","Amount","Paid To","Category","Description","Info"]):
-    col.markdown(f"<div class='txh'>{lbl}</div>", unsafe_allow_html=True)
+# Session state for pending changes
+if "cat_changes"  not in st.session_state: st.session_state.cat_changes  = {}
+if "desc_changes" not in st.session_state: st.session_state.desc_changes = {}
 
-if "cat_changes" not in st.session_state:
-    st.session_state.cat_changes = {}
+# ── Scrollable container using st.container ──
+tx_container = st.container(height=480, border=False)
 
-for idx, row in tbl.iterrows():
-    sr  = int(row["_sheet_row"])
-    cur = st.session_state.cat_changes.get(sr, row["category"])
-    if cur not in CATEGORIES: cur = CATEGORIES[0]
+# Sticky header
+with tx_container:
+ hc = st.columns([1.1, 0.9, 1.6, 2.0, 2.2, 2.8])
+ for col, lbl in zip(hc, ["Date","Amount","Paid To","Category","Note","Raw SMS"]):
+     col.markdown(f"<div class='txh'>{lbl}</div>", unsafe_allow_html=True)
 
-    rc = st.columns([1.2, 1.0, 1.8, 2.2, 3.5, 1.5])
-    rc[0].markdown(f"<div class='txd'>{row['date']}</div>", unsafe_allow_html=True)
-    rc[1].markdown(f"<div class='txamt'>{row['amount']}</div>", unsafe_allow_html=True)
-    rc[2].markdown(f"<div class='txpay'>{row.get('credited_to','')}</div>", unsafe_allow_html=True)
-    sel = rc[3].selectbox("c", CATEGORIES, index=CATEGORIES.index(cur), key=f"cat_{sr}", label_visibility="collapsed")
-    rc[4].markdown(f"<div class='txdesc'>{row.get('description','')}</div>", unsafe_allow_html=True)
-    rc[5].markdown(f"<div class='txdesc'>{row.get('additional_description','')}</div>", unsafe_allow_html=True)
-    st.markdown("<div class='txrow-div'></div>", unsafe_allow_html=True)
+ for idx, row in tbl.iterrows():
+  sr  = int(row["_sheet_row"])
 
-    if sel != row["category"]:
-        st.session_state.cat_changes[sr] = sel
-    elif sr in st.session_state.cat_changes and st.session_state.cat_changes[sr] == row["category"]:
-        del st.session_state.cat_changes[sr]
+  # Current values (pending edits take priority)
+  cur_cat  = st.session_state.cat_changes.get(sr,  row["category"])
+  cur_desc = st.session_state.desc_changes.get(sr, row.get("additional_description",""))
+  if cur_cat not in CATEGORIES: cur_cat = CATEGORIES[0]
 
-# Save bar
-pending = st.session_state.cat_changes
-if pending:
-    n = len(pending)
+  rc = st.columns([1.1, 0.9, 1.6, 2.0, 2.2, 2.8])
+  rc[0].markdown(f"<div class='txd'>{row['date']}</div>",                    unsafe_allow_html=True)
+  rc[1].markdown(f"<div class='txamt'>{row['amount']}</div>",                unsafe_allow_html=True)
+  rc[2].markdown(f"<div class='txpay'>{row.get('credited_to','')}</div>",    unsafe_allow_html=True)
+
+  # Editable category dropdown
+  sel_cat = rc[3].selectbox("c", CATEGORIES, index=CATEGORIES.index(cur_cat),
+                             key=f"cat_{sr}", label_visibility="collapsed")
+
+  # Editable description text input
+  if f"desc_input_{sr}" not in st.session_state:
+      st.session_state[f"desc_input_{sr}"] = cur_desc
+  sel_desc = rc[4].text_input("d",
+                               value=st.session_state[f"desc_input_{sr}"],
+                               placeholder="Add a note...",
+                               key=f"desc_{sr}",
+                               label_visibility="collapsed")
+  st.session_state[f"desc_input_{sr}"] = sel_desc
+
+  # Raw SMS — read only
+  rc[5].markdown(f"<div class='txdesc'>{row.get('description','')}</div>", unsafe_allow_html=True)
+
+  st.markdown("<div class='txrow-div'></div>", unsafe_allow_html=True)
+
+  # Track category changes
+  if sel_cat != row["category"]:
+      st.session_state.cat_changes[sr] = sel_cat
+  elif sr in st.session_state.cat_changes and st.session_state.cat_changes[sr] == row["category"]:
+      del st.session_state.cat_changes[sr]
+
+  # Track description changes
+  if sel_desc != row.get("additional_description",""):
+      st.session_state.desc_changes[sr] = sel_desc
+  elif sr in st.session_state.desc_changes and st.session_state.desc_changes[sr] == row.get("additional_description",""):
+      del st.session_state.desc_changes[sr]
+
+# ── Save bar ──
+all_pending = {**{f"cat_{k}": v for k, v in st.session_state.cat_changes.items()},
+               **{f"desc_{k}": v for k, v in st.session_state.desc_changes.items()}}
+
+if all_pending:
+    n_cat  = len(st.session_state.cat_changes)
+    n_desc = len(st.session_state.desc_changes)
+    total_pending = n_cat + n_desc
+
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
     cm, cs, cd = st.columns([5, 1, 1])
-    cm.markdown(f"<div style='font-size:0.86rem;font-weight:600;color:#f5a623;padding-top:12px'>⬡ {n} unsaved change(s)</div>", unsafe_allow_html=True)
+
+    parts = []
+    if n_cat:  parts.append(f"{n_cat} category")
+    if n_desc: parts.append(f"{n_desc} note")
+    cm.markdown(f"<div style='font-size:0.86rem;font-weight:600;color:#f5a623;padding-top:12px'>⬡ {', '.join(parts)} change(s) unsaved</div>", unsafe_allow_html=True)
+
     with cs:
         if st.button("✓ Save", key="save_btn"):
-            saved = sum(1 for sr, cat in pending.items() if update_category_in_sheet(sr, cat))
-            if saved == n:
+            saved = 0
+            errors = []
+            # Save category changes — col 5
+            for sr, cat in list(st.session_state.cat_changes.items()):
+                if update_sheet_cell(sr, 5, cat):
+                    saved += 1
+                else:
+                    errors.append(f"Category row {sr}")
+            # Save description/note changes — col 6 (Additional Description)
+            for sr, desc in list(st.session_state.desc_changes.items()):
+                if update_sheet_cell(sr, 6, desc):
+                    saved += 1
+                else:
+                    errors.append(f"Note row {sr}")
+
+            if not errors:
                 st.success(f"✅ {saved} update(s) saved!")
-                st.session_state.cat_changes = {}
+                st.session_state.cat_changes  = {}
+                st.session_state.desc_changes = {}
                 st.cache_data.clear()
                 st.rerun()
             else:
-                st.error("Some updates failed.")
+                st.error(f"Failed: {', '.join(errors)}")
     with cd:
         if st.button("✕ Discard", key="discard_btn"):
-            st.session_state.cat_changes = {}
+            st.session_state.cat_changes  = {}
+            st.session_state.desc_changes = {}
             st.rerun()
