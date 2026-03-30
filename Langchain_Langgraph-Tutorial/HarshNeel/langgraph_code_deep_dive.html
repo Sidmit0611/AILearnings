@@ -1,0 +1,203 @@
+
+<style>
+*{box-sizing:border-box;}
+.stepper{font-size:14px;color:var(--color-text-primary);}
+.steps-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.step-dot{width:28px;height:28px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);font-size:12px;font-weight:500;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.step-dot.active{background:#534AB7;border-color:#534AB7;color:#EEEDFE;}
+.step-dot.done{background:#1D9E75;border-color:#1D9E75;color:#E1F5EE;}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:12px;}
+.panel-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin:0 0 4px;}
+.panel-sub{font-size:12px;color:var(--color-text-secondary);margin:0 0 12px;}
+.code-block{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-family:var(--font-mono);font-size:12px;color:var(--color-text-primary);line-height:1.7;margin:10px 0;overflow-x:auto;white-space:pre;}
+.highlight{background:#EEEDFE;color:#3C3489;border-radius:3px;padding:1px 4px;font-family:var(--font-mono);font-size:12px;}
+.warn-box{background:#FAEEDA;border-radius:var(--border-radius-md);padding:10px 12px;font-size:13px;color:#633806;margin:10px 0;border-left:3px solid #BA7517;border-radius:0;}
+.info-box{background:#E1F5EE;border-radius:var(--border-radius-md);padding:10px 12px;font-size:13px;color:#085041;margin:10px 0;border-left:3px solid #1D9E75;border-radius:0;}
+.danger-box{background:#FCEBEB;padding:10px 12px;font-size:13px;color:#791F1F;margin:10px 0;border-left:3px solid #E24B4A;border-radius:0;}
+.state-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+.state-field{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 10px;}
+.state-key{font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);}
+.state-val{font-size:12px;color:var(--color-text-primary);margin-top:2px;}
+.state-val.filled{color:#0F6E56;font-weight:500;}
+.state-val.changed{color:#534AB7;font-weight:500;}
+.nav-row{display:flex;gap:8px;margin-top:12px;}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;margin:2px 2px 2px 0;}
+.tag-purple{background:#EEEDFE;color:#3C3489;}
+.tag-teal{background:#E1F5EE;color:#085041;}
+.tag-amber{background:#FAEEDA;color:#633806;}
+.tag-red{background:#FCEBEB;color:#791F1F;}
+</style>
+
+<div class="stepper">
+<div class="steps-nav" id="nav"></div>
+<div id="panel-content"></div>
+<div class="nav-row">
+  <button onclick="move(-1)" id="btn-prev">← Prev</button>
+  <button onclick="move(1)" id="btn-next">Next →</button>
+</div>
+</div>
+
+<script>
+const steps = [
+{
+  title: "Step 1 — Imports & LLM setup",
+  sub: "What gets loaded and why",
+  content: `<div class="code-block">from langgraph.graph import StateGraph, END
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_groq import ChatGroq
+from typing import TypedDict, Literal
+from dotenv import load_dotenv
+load_dotenv()
+
+llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0.5)</div>
+<div class="info-box"><strong>StateGraph</strong> — the graph engine. You register nodes (functions) and edges (connections) into it, then compile it into a runnable app.<br><br><strong>END</strong> — a special LangGraph constant. When an agent's edge points to END, it means "stop the graph here, return the state."<br><br><strong>HumanMessage / SystemMessage</strong> — wrappers around your text so the LLM knows the role. SystemMessage sets behaviour, HumanMessage is the actual input.<br><br><strong>load_dotenv()</strong> — reads your .env file so GROQ_API_KEY is available as an environment variable. Without this, ChatGroq raises an auth error.</div>
+<div class="warn-box"><strong>temperature=0.5</strong> — for the supervisor this is slightly risky. The supervisor needs to return EXACTLY "SUMMARISE", "REEL", or "ANSWER". Higher temperature = more creative = more likely to return something unexpected like "Summarize" or "SUMMARY". Consider temperature=0 for the supervisor specifically.</div>`
+},
+{
+  title: "Step 2 — AgentState (shared memory)",
+  sub: "The dict that flows through every node",
+  content: `<div class="code-block">class AgentState(TypedDict):
+    user_input: str
+    summary: str
+    reel_script: str
+    final_response: str
+    next: str</div>
+<p style="font-size:13px;color:var(--color-text-secondary);margin:8px 0;">Think of AgentState as a shared whiteboard. Every agent reads from it and writes back to it. Here's what each field is for:</p>
+<div class="state-grid">
+  <div class="state-field"><div class="state-key">user_input</div><div class="state-val">What the user typed. Set once at invoke(), never changes.</div></div>
+  <div class="state-field"><div class="state-key">next</div><div class="state-val">Supervisor writes routing decision here — "SUMMARISE", "REEL", or "ANSWER".</div></div>
+  <div class="state-field"><div class="state-key">summary</div><div class="state-val">Summariser agent writes here. Reel agent reads from here.</div></div>
+  <div class="state-field"><div class="state-key">reel_script</div><div class="state-val">Reel agent writes here. Not used by any other agent currently.</div></div>
+  <div class="state-field" style="grid-column:1/-1"><div class="state-key">final_response</div><div class="state-val">Whichever agent runs last writes the answer here. This is what gets printed to the user.</div></div>
+</div>
+<div class="danger-box"><strong>Critical:</strong> TypedDict gives zero runtime validation. If an agent writes <span class="highlight">None</span> to <span class="highlight">summary</span> by mistake, the reel agent will silently receive None and likely crash with an unhelpful error. This is the main reason to switch to Pydantic.</div>`
+},
+{
+  title: "Step 3 — Supervisor node",
+  sub: "The router — most critical piece of the system",
+  content: `<div class="code-block">def supervisor(state: AgentState) -> AgentState:
+    prompt = f"""
+    User said: "{state['user_input']}"
+    Decide what to do. Reply with ONLY one word:
+    - SUMMARISE  → if user wants to summarise an article
+    - REEL       → if user wants a reel script
+    - ANSWER     → if it's a general question
+    """
+    result = llm.invoke([HumanMessage(content=prompt)])
+    decision = result.content.strip().upper()
+    return {**state, "next": decision}</div>
+<div class="warn-box"><strong>Most important line:</strong> <span class="highlight">return {**state, "next": decision}</span><br><br>The <span class="highlight">**state</span> spreads ALL existing fields unchanged, then overrides only <span class="highlight">next</span>. If you forget <span class="highlight">**state</span> and just return <span class="highlight">{"next": decision}</span>, LangGraph will replace the entire state with just that one key — and user_input is gone by the time the next agent runs.</div>
+<div class="info-box"><strong>.strip().upper()</strong> — defensive coding. LLMs sometimes return "Summarise\n" or " REEL " with whitespace. strip() removes it, upper() normalises case so your if-checks don't miss.</div>
+<div class="danger-box"><strong>Fragile point:</strong> The supervisor's entire job depends on the LLM returning exactly one of three words. If it returns "I'll summarise that" or "SUMMARIZE" (US spelling), <span class="highlight">route()</span> falls through to <span class="highlight">general</span> silently. Always add a fallback or logging here in production.</div>`
+},
+{
+  title: "Step 4 — Worker agents",
+  sub: "Summariser, reel script, general — how they differ",
+  content: `<div class="code-block">def summariser_agent(state: AgentState) -> AgentState:
+    result = llm.invoke([
+        SystemMessage(content="You are an expert summariser..."),
+        HumanMessage(content=f"Summarise this:\n\n{state['user_input']}")
+    ])
+    return {**state, "summary": result.content,
+                      "final_response": result.content}
+
+def reel_script_agent(state: AgentState) -> AgentState:
+    summary = state.get("summary") or state["user_input"]  # ← key line
+    ...</div>
+<div class="info-box"><strong>SystemMessage vs HumanMessage</strong> — SystemMessage shapes the LLM's persona/behaviour for this call. HumanMessage is the actual task. Always put instructions in System, content in Human.</div>
+<div class="warn-box"><strong>Key line in reel agent:</strong> <span class="highlight">state.get("summary") or state["user_input"]</span><br><br>This is a fallback. If the user asks for a reel directly without going through the summariser first, <span class="highlight">summary</span> will be an empty string (falsy), so <span class="highlight">or</span> kicks in and uses raw user_input instead. Without this, you'd generate a reel script from an empty string.</div>
+<span class="tag tag-teal">summariser writes: summary + final_response</span>
+<span class="tag tag-purple">reel writes: reel_script + final_response</span>
+<span class="tag tag-amber">general writes: only final_response</span>`
+},
+{
+  title: "Step 5 — route() function",
+  sub: "The bridge between supervisor decision and actual node",
+  content: `<div class="code-block">def route(state: AgentState) -> Literal["summariser", "reel_script", "general", "__end__"]:
+    decision = state.get("next", "ANSWER")
+    if decision == "SUMMARISE": return "summariser"
+    if decision == "REEL":      return "reel_script"
+    return "general"</div>
+<div class="info-box"><strong>This function doesn't call any LLM.</strong> It just reads <span class="highlight">state["next"]</span> (which the supervisor already wrote) and returns a string. LangGraph uses that string to look up which node to execute next.</div>
+<div class="warn-box"><strong>Literal["summariser", "reel_script", "general"]</strong> — the return type annotation is not just documentation. LangGraph reads it to validate that your conditional edges match registered node names. If you typo a name here, you get an error at compile time, not at runtime.</div>
+<div class="danger-box"><strong>Silent fallback risk:</strong> If supervisor returns anything unexpected (say "SUMMARIZE"), none of the if-checks match, and it falls through to <span class="highlight">return "general"</span>. The user gets a generic answer with no error. Good for UX, bad for debugging. Add a <span class="highlight">print(f"Routing to: {decision}")</span> while learning.</div>`
+},
+{
+  title: "Step 6 — Building & compiling the graph",
+  sub: "Registering nodes, edges, and entry point",
+  content: `<div class="code-block">graph = StateGraph(AgentState)          # 1. create graph with state schema
+graph.add_node("supervisor",  supervisor) # 2. register nodes (name → function)
+graph.add_node("summariser",  summariser_agent)
+graph.add_node("reel_script", reel_script_agent)
+graph.add_node("general",     general_agent)
+
+graph.set_entry_point("supervisor")       # 3. first node to run
+graph.add_conditional_edges("supervisor", route)  # 4. supervisor → route()
+graph.add_edge("summariser",  END)        # 5. workers always end
+graph.add_edge("reel_script", END)
+graph.add_edge("general",     END)
+
+app = graph.compile()                     # 6. lock the graph, make it runnable</div>
+<div class="info-box"><strong>add_node(name, fn)</strong> — the string name is what route() returns. These must match exactly.<br><br><strong>add_conditional_edges("supervisor", route)</strong> — this tells LangGraph: after supervisor runs, call route(state) and go to whatever node name it returns.<br><br><strong>add_edge(node, END)</strong> — unconditional. After this node runs, always stop.<br><br><strong>compile()</strong> — validates the graph (no orphan nodes, no missing edges) and returns a Runnable you can invoke.</div>
+<div class="warn-box"><strong>Nothing runs yet at this point.</strong> compile() just builds the execution plan. The graph only executes when you call app.invoke().</div>`
+},
+{
+  title: "Step 7 — The run loop & state snapshot",
+  sub: "Where user input enters, and what state looks like at each stage",
+  content: `<div class="code-block">while True:
+    user_input = input("You: ").strip()
+    if user_input.lower() == "exit":
+        break
+
+    result = app.invoke({
+        "user_input": user_input,   # only this matters
+        "summary": "",              # initialised empty
+        "reel_script": "",
+        "final_response": "",
+        "next": ""
+    })
+    print(f"\nAgent: {result['final_response']}\n")</div>
+<p style="font-size:13px;color:var(--color-text-secondary);margin:8px 0;">Here's what AgentState looks like at each stage for input "summarise this article: ..."</p>
+<div class="state-grid">
+  <div class="state-field"><div class="state-key">After invoke() — initial</div><div class="state-val">user_input: "summarise this..." | next: "" | summary: "" | final_response: ""</div></div>
+  <div class="state-field"><div class="state-key">After supervisor runs</div><div class="state-val changed">next: "SUMMARISE" ← written now</div></div>
+  <div class="state-field"><div class="state-key">After summariser runs</div><div class="state-val changed">summary: "1. Key point..." ← written now<br>final_response: same ← written now</div></div>
+  <div class="state-field"><div class="state-key">result returned to you</div><div class="state-val filled">full dict with all fields — you print final_response</div></div>
+</div>
+<div class="danger-box"><strong>No memory between turns.</strong> Every call to app.invoke() starts with a fresh state dict. If the user says "now make a reel from that", the new invoke() has no idea what "that" is — summary is "" again. This is the stateless limitation to solve next.</div>`
+}
+];
+
+let current = 0;
+
+function render() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = steps.map((s,i) => {
+    let cls = 'step-dot';
+    if (i === current) cls += ' active';
+    else if (i < current) cls += ' done';
+    return `<div class="${cls}" onclick="goto(${i})">${i+1}</div>`;
+  }).join('');
+
+  const s = steps[current];
+  document.getElementById('panel-content').innerHTML = `
+    <div class="panel">
+      <div class="panel-title">${s.title}</div>
+      <div class="panel-sub">${s.sub}</div>
+      ${s.content}
+    </div>`;
+
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === steps.length - 1;
+  document.getElementById('btn-next').textContent = current === steps.length - 1 ? 'Done' : 'Next →';
+}
+
+function move(dir) { goto(current + dir); }
+function goto(i) {
+  if (i < 0 || i >= steps.length) return;
+  current = i;
+  render();
+}
+
+render();
+</script>
