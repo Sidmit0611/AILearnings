@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUPEE RADAR // DATA TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #FF5F1F;
+            --bg: #08090a;
+            --panel: #111214;
+            --border: #24262b;
+        }
+        body { 
+            background-color: var(--bg); 
+            color: #e0e0e0; 
+            font-family: 'JetBrains Mono', monospace;
+            /* Grain Texture Overlay as per Design Skill */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+        }
+        .bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+        .panel { 
+            background: var(--panel); 
+            border: 1px solid var(--border); 
+            position: relative; 
+            transition: border-color 0.3s ease;
+        }
+        .panel:hover { border-color: var(--orange); }
+        /* Tactical Accent Line */
+        .panel::before { 
+            content: ''; 
+            position: absolute; 
+            top: -1px; 
+            left: 10px; 
+            width: 30px; 
+            height: 2px; 
+            background: var(--orange); 
+        }
+        
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FF5F1F'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+
+        .kpi-value { 
+            font-size: 4.5rem; 
+            line-height: 0.9; 
+            color: white; 
+            text-shadow: 0 0 15px rgba(255, 95, 31, 0.1); 
+        }
+
+        /* Micro-interaction for the title */
+        .glitch-hover:hover { 
+            color: var(--orange); 
+            text-shadow: 2px 0 #fff, -2px 0 #ff00ea; 
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 min-h-screen">
+
+    <nav class="flex justify-between items-end border-b border-[#24262b] pb-6 mb-12">
+        <div>
+            <h1 class="bebas text-5xl text-white glitch-hover cursor-default transition-all">RUPEE RADAR //</h1>
+            <p class="text-[10px] uppercase tracking-[0.4em] text-orange-500 font-bold">Expense Intelligence Terminal</p>
+        </div>
+        <div class="text-right hidden md:block">
+            <p class="text-[10px] text-gray-600 uppercase">System: Operational</p>
+            <p id="timestamp" class="text-[10px] text-gray-400 font-bold tracking-tighter"></p>
+        </div>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-0 mb-12">
+        <div class="panel p-6 border-r-0">
+            <label class="text-[10px] font-bold text-orange-500 uppercase mb-3 block">01_Temporal_Year</label>
+            <select id="yearFilter" class="w-full bg-transparent border-b border-white/10 py-2 outline-none focus:border-orange-500 text-lg cursor-pointer" onchange="updateDashboard()">
+                <option value="All">--- ALL YEARS ---</option>
+            </select>
+        </div>
+        <div class="panel p-6 border-r-0">
+            <label class="text-[10px] font-bold text-orange-500 uppercase mb-3 block">02_Temporal_Month</label>
+            <select id="monthFilter" class="w-full bg-transparent border-b border-white/10 py-2 outline-none focus:border-orange-500 text-lg cursor-pointer" onchange="updateDashboard()">
+                <option value="All">--- ALL MONTHS ---</option>
+            </select>
+        </div>
+        <div class="panel p-6">
+            <label class="text-[10px] font-bold text-orange-500 uppercase mb-3 block">03_Classification_Cat</label>
+            <select id="categoryFilter" class="w-full bg-transparent border-b border-white/10 py-2 outline-none focus:border-orange-500 text-lg cursor-pointer" onchange="updateDashboard()">
+                <option value="All">--- ALL CATEGORIES ---</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="panel p-10 border-t-4 border-t-orange-600">
+            <p class="text-[11px] font-bold text-gray-500 mb-6 flex items-center">
+                <span class="w-2 h-2 bg-orange-600 mr-2"></span> AGGREGATE_EXPENDITURE
+            </p>
+            <h2 id="totalSpend" class="bebas kpi-value">₹0</h2>
+        </div>
+
+        <div class="panel p-10 border-t-4 border-t-blue-600">
+            <p class="text-[11px] font-bold text-gray-500 mb-6 flex items-center">
+                <span class="w-2 h-2 bg-blue-600 mr-2"></span> TRANSACTION_VOLUME
+            </p>
+            <h2 id="totalTxns" class="bebas kpi-value">0</h2>
+        </div>
+
+        <div class="panel p-10 border-t-4 border-t-green-600">
+            <p class="text-[11px] font-bold text-gray-500 mb-6 flex items-center">
+                <span class="w-2 h-2 bg-green-600 mr-2"></span> CORE_VELOCITY_SECTOR
+            </p>
+            <h2 id="topCat" class="bebas text-4xl text-white leading-tight uppercase">Loading...</h2>
+        </div>
+    </div>
+
+    <script>
+        // Use full URL if hosted on Vercel, or localhost for dev
+        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : '/api'; 
+
+        async function initFilters() {
+            try {
+                const res = await fetch(`${API_BASE}/filters`);
+                const data = await res.json();
+                
+                const fillSelect = (id, list) => {
+                    const el = document.getElementById(id);
+                    list.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item;
+                        opt.textContent = item.toUpperCase();
+                        el.appendChild(opt);
+                    });
+                };
+
+                fillSelect('yearFilter', data.years);
+                fillSelect('monthFilter', data.months);
+                fillSelect('categoryFilter', data.categories);
+            } catch (e) { 
+                console.error("Filter Fetch Failure:", e); 
+            }
+        }
+
+        async function updateDashboard() {
+            const year = document.getElementById('yearFilter').value;
+            const month = document.getElementById('monthFilter').value;
+            const cat = document.getElementById('categoryFilter').value;
+
+            // Staggered loading state
+            document.getElementById('topCat').innerText = "CALCULATING...";
+
+            const url = `${API_BASE}/dashboard?year=${year}&month=${month}&category=${cat}`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            document.getElementById('totalSpend').textContent = data.total_spend;
+            document.getElementById('totalTxns').textContent = data.total_transactions;
+            document.getElementById('topCat').textContent = data.top_category.toUpperCase();
+        }
+
+        // System clock display
+        document.getElementById('timestamp').textContent = new Date().toISOString().replace('T', ' // ').split('.')[0];
+        
+        // Boot Sequence
+        initFilters().then(updateDashboard);
+    </script>
+</body>
+</html>

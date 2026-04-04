@@ -4,11 +4,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from typing import TypedDict, Literal
 from langgraph.graph import StateGraph, END, START
-from dotenv import load_dotenv
-load_dotenv()
-
-### Loading the LLM
-llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0.5)
 
 ### State is an object which gets passed between the objects, and all the objects can read/write to it. 
 ### It's a shared memory between the agents.
